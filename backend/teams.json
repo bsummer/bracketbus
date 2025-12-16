@@ -1,0 +1,386 @@
+[
+    {
+      "name": "Florida Gators",
+      "seed": 1,
+      "region": "West",
+      "logoUrl": "https://a.espncdn.com/i/teamlogos/ncaa/500/57.png"
+    },
+    {
+      "name": "Duke Blue Devils",
+      "seed": 1,
+      "region": "East",
+      "logoUrl": "https://a.espncdn.com/i/teamlogos/ncaa/500/150.png"
+    },
+    {
+      "name": "Houston Cougars",
+      "seed": 1,
+      "region": "Midwest",
+      "logoUrl": "https://a.espncdn.com/i/teamlogos/ncaa/500/248.png"
+    },
+    {
+      "name": "Auburn Tigers",
+      "seed": 1,
+      "region": "South",
+      "logoUrl": "https://a.espncdn.com/i/teamlogos/ncaa/500/2.png"
+    },
+    {
+      "name": "Alabama Crimson Tide",
+      "seed": 2,
+      "region": "East",
+      "logoUrl": "https://a.espncdn.com/i/teamlogos/ncaa/500/333.png"
+    },
+    {
+      "name": "St. John's Red Storm",
+      "seed": 2,
+      "region": "West",
+      "logoUrl": "https://a.espncdn.com/i/teamlogos/ncaa/500/2599.png"
+    },
+    {
+      "name": "Tennessee Volunteers",
+      "seed": 2,
+      "region": "Midwest",
+      "logoUrl": "https://a.espncdn.com/i/teamlogos/ncaa/500/2633.png"
+    },
+    {
+      "name": "Michigan State Spartans",
+      "seed": 2,
+      "region": "South",
+      "logoUrl": "https://a.espncdn.com/i/teamlogos/ncaa/500/127.png"
+    },
+    {
+      "name": "Wisconsin Badgers",
+      "seed": 3,
+      "region": "East",
+      "logoUrl": "https://a.espncdn.com/i/teamlogos/ncaa/500/275.png"
+    },
+    {
+      "name": "Texas Tech Red Raiders",
+      "seed": 3,
+      "region": "West",
+      "logoUrl": "https://a.espncdn.com/i/teamlogos/ncaa/500/2641.png"
+    },
+    {
+      "name": "Kentucky Wildcats",
+      "seed": 3,
+      "region": "Midwest",
+      "logoUrl": "https://a.espncdn.com/i/teamlogos/ncaa/500/96.png"
+    },
+    {
+      "name": "Iowa State Cyclones",
+      "seed": 3,
+      "region": "South",
+      "logoUrl": "https://a.espncdn.com/i/teamlogos/ncaa/500/66.png"
+    },
+    {
+      "name": "Arizona Wildcats",
+      "seed": 4,
+      "region": "East",
+      "logoUrl": "https://a.espncdn.com/i/teamlogos/ncaa/500/12.png"
+    },
+    {
+      "name": "Maryland Terrapins",
+      "seed": 4,
+      "region": "West",
+      "logoUrl": "https://a.espncdn.com/i/teamlogos/ncaa/500/120.png"
+    },
+    {
+      "name": "Purdue Boilermakers",
+      "seed": 4,
+      "region": "Midwest",
+      "logoUrl": "https://a.espncdn.com/i/teamlogos/ncaa/500/2509.png"
+    },
+    {
+      "name": "Texas A&M Aggies",
+      "seed": 4,
+      "region": "South",
+      "logoUrl": "https://a.espncdn.com/i/teamlogos/ncaa/500/245.png"
+    },
+    {
+      "name": "Oregon Ducks",
+      "seed": 5,
+      "region": "East",
+      "logoUrl": "https://a.espncdn.com/i/teamlogos/ncaa/500/2483.png"
+    },
+    {
+      "name": "Memphis Tigers",
+      "seed": 5,
+      "region": "West",
+      "logoUrl": "https://a.espncdn.com/i/teamlogos/ncaa/500/235.png"
+    },
+    {
+      "name": "Clemson Tigers",
+      "seed": 5,
+      "region": "Midwest",
+      "logoUrl": "https://a.espncdn.com/i/teamlogos/ncaa/500/228.png"
+    },
+    {
+      "name": "Michigan Wolverines",
+      "seed": 5,
+      "region": "South",
+      "logoUrl": "https://a.espncdn.com/i/teamlogos/ncaa/500/130.png"
+    },
+    {
+      "name": "BYU Cougars",
+      "seed": 6,
+      "region": "East",
+      "logoUrl": "https://a.espncdn.com/i/teamlogos/ncaa/500/252.png"
+    },
+    {
+      "name": "Missouri Tigers",
+      "seed": 6,
+      "region": "West",
+      "logoUrl": "https://a.espncdn.com/i/teamlogos/ncaa/500/142.png"
+    },
+    {
+      "name": "Illinois Fighting Illini",
+      "seed": 6,
+      "region": "Midwest",
+      "logoUrl": "https://a.espncdn.com/i/teamlogos/ncaa/500/356.png"
+    },
+    {
+      "name": "Ole Miss Rebels",
+      "seed": 6,
+      "region": "South",
+      "logoUrl": "https://a.espncdn.com/i/teamlogos/ncaa/500/145.png"
+    },
+    {
+      "name": "Saint Mary's Gaels",
+      "seed": 7,
+      "region": "East",
+      "logoUrl": "https://a.espncdn.com/i/teamlogos/ncaa/500/2608.png"
+    },
+    {
+      "name": "Kansas Jayhawks",
+      "seed": 7,
+      "region": "West",
+      "logoUrl": "https://a.espncdn.com/i/teamlogos/ncaa/500/2305.png"
+    },
+    {
+      "name": "UCLA Bruins",
+      "seed": 7,
+      "region": "Midwest",
+      "logoUrl": "https://a.espncdn.com/i/teamlogos/ncaa/500/26.png"
+    },
+    {
+      "name": "Marquette Golden Eagles",
+      "seed": 7,
+      "region": "South",
+      "logoUrl": "https://a.espncdn.com/i/teamlogos/ncaa/500/269.png"
+    },
+    {
+      "name": "Mississippi State Bulldogs",
+      "seed": 8,
+      "region": "East",
+      "logoUrl": "https://a.espncdn.com/i/teamlogos/ncaa/500/344.png"
+    },
+    {
+      "name": "UConn Huskies",
+      "seed": 8,
+      "region": "West",
+      "logoUrl": "https://a.espncdn.com/i/teamlogos/ncaa/500/41.png"
+    },
+    {
+      "name": "Gonzaga Bulldogs",
+      "seed": 8,
+      "region": "Midwest",
+      "logoUrl": "https://a.espncdn.com/i/teamlogos/ncaa/500/2250.png"
+    },
+    {
+      "name": "Louisville Cardinals",
+      "seed": 8,
+      "region": "South",
+      "logoUrl": "https://a.espncdn.com/i/teamlogos/ncaa/500/97.png"
+    },
+    {
+      "name": "Baylor Bears",
+      "seed": 9,
+      "region": "East",
+      "logoUrl": "https://a.espncdn.com/i/teamlogos/ncaa/500/239.png"
+    },
+    {
+      "name": "Oklahoma Sooners",
+      "seed": 9,
+      "region": "West",
+      "logoUrl": "https://a.espncdn.com/i/teamlogos/ncaa/500/201.png"
+    },
+    {
+      "name": "Georgia Bulldogs",
+      "seed": 9,
+      "region": "Midwest",
+      "logoUrl": "https://a.espncdn.com/i/teamlogos/ncaa/500/61.png"
+    },
+    {
+      "name": "Creighton Bluejays",
+      "seed": 9,
+      "region": "South",
+      "logoUrl": "https://a.espncdn.com/i/teamlogos/ncaa/500/156.png"
+    },
+    {
+      "name": "Vanderbilt Commodores",
+      "seed": 10,
+      "region": "East",
+      "logoUrl": "https://a.espncdn.com/i/teamlogos/ncaa/500/238.png"
+    },
+    {
+      "name": "Arkansas Razorbacks",
+      "seed": 10,
+      "region": "West",
+      "logoUrl": "https://a.espncdn.com/i/teamlogos/ncaa/500/8.png"
+    },
+    {
+      "name": "Utah State Aggies",
+      "seed": 10,
+      "region": "Midwest",
+      "logoUrl": "https://a.espncdn.com/i/teamlogos/ncaa/500/328.png"
+    },
+    {
+      "name": "New Mexico Lobos",
+      "seed": 10,
+      "region": "South",
+      "logoUrl": "https://a.espncdn.com/i/teamlogos/ncaa/500/167.png"
+    },
+    {
+      "name": "VCU Rams",
+      "seed": 11,
+      "region": "East",
+      "logoUrl": "https://a.espncdn.com/i/teamlogos/ncaa/500/2670.png"
+    },
+    {
+      "name": "Drake Bulldogs",
+      "seed": 11,
+      "region": "West",
+      "logoUrl": "https://a.espncdn.com/i/teamlogos/ncaa/500/2181.png"
+    },
+    {
+      "name": "Xavier Musketeers",
+      "seed": 11,
+      "region": "Midwest",
+      "logoUrl": "https://a.espncdn.com/i/teamlogos/ncaa/500/2752.png"
+    },
+    {
+        "name": "Wake Forest Demon Deacons",
+        "seed": 11,
+        "region": "South",
+        "logoUrl": "https://a.espncdn.com/i/teamlogos/ncaa/500/154.png"
+    },
+    {
+      "name": "Liberty Flames",
+      "seed": 12,
+      "region": "East",
+      "logoUrl": "https://a.espncdn.com/i/teamlogos/ncaa/500/2335.png"
+    },
+    {
+      "name": "Colorado State Rams",
+      "seed": 12,
+      "region": "West",
+      "logoUrl": "https://a.espncdn.com/i/teamlogos/ncaa/500/36.png"
+    },
+    {
+      "name": "McNeese Cowboys",
+      "seed": 12,
+      "region": "Midwest",
+      "logoUrl": "https://a.espncdn.com/i/teamlogos/ncaa/500/2377.png"
+    },
+    {
+      "name": "UC San Diego Tritons",
+      "seed": 12,
+      "region": "South",
+      "logoUrl": "https://a.espncdn.com/i/teamlogos/ncaa/500/28.png"
+    },
+    {
+      "name": "Akron Zips",
+      "seed": 13,
+      "region": "East",
+      "logoUrl": "https://a.espncdn.com/i/teamlogos/ncaa/500/2006.png"
+    },
+    {
+      "name": "Grand Canyon Antelopes",
+      "seed": 13,
+      "region": "West",
+      "logoUrl": "https://a.espncdn.com/i/teamlogos/ncaa/500/2253.png"
+    },
+    {
+      "name": "High Point Panthers",
+      "seed": 13,
+      "region": "Midwest",
+      "logoUrl": "https://a.espncdn.com/i/teamlogos/ncaa/500/2290.png"
+    },
+    {
+      "name": "Yale Bulldogs",
+      "seed": 13,
+      "region": "South",
+      "logoUrl": "https://a.espncdn.com/i/teamlogos/ncaa/500/43.png"
+    },
+    {
+      "name": "Montana Grizzlies",
+      "seed": 14,
+      "region": "East",
+      "logoUrl": "https://a.espncdn.com/i/teamlogos/ncaa/500/149.png"
+    },
+    {
+      "name": "UNC Wilmington Seahawks",
+      "seed": 14,
+      "region": "West",
+      "logoUrl": "https://a.espncdn.com/i/teamlogos/ncaa/500/350.png"
+    },
+    {
+      "name": "Troy Trojans",
+      "seed": 14,
+      "region": "Midwest",
+      "logoUrl": "https://a.espncdn.com/i/teamlogos/ncaa/500/2653.png"
+    },
+    {
+      "name": "Lipscomb Bisons",
+      "seed": 14,
+      "region": "South",
+      "logoUrl": "https://a.espncdn.com/i/teamlogos/ncaa/500/288.png"
+    },
+    {
+      "name": "Robert Morris Colonials",
+      "seed": 15,
+      "region": "East",
+      "logoUrl": "https://a.espncdn.com/i/teamlogos/ncaa/500/2523.png"
+    },
+    {
+      "name": "Norfolk State Spartans",
+      "seed": 15,
+      "region": "West",
+      "logoUrl": "https://a.espncdn.com/i/teamlogos/ncaa/500/2450.png"
+    },
+    {
+      "name": "Wofford Terriers",
+      "seed": 15,
+      "region": "Midwest",
+      "logoUrl": "https://a.espncdn.com/i/teamlogos/ncaa/500/2747.png"
+    },
+    {
+      "name": "Bryant Bulldogs",
+      "seed": 15,
+      "region": "South",
+      "logoUrl": "https://a.espncdn.com/i/teamlogos/ncaa/500/2803.png"
+    },
+    {
+        "name": "American Eagles",
+        "seed": 16,
+        "region": "East",
+        "logoUrl": "https://a.espncdn.com/i/teamlogos/ncaa/500/44.png"
+    },
+    {
+        "name": "SIU Edwardsville Cougars",
+        "seed": 16,
+        "region": "West",
+        "logoUrl": "https://a.espncdn.com/i/teamlogos/ncaa/500/2565.png"
+    },
+    {
+        "name": "Quinnipiac Bobcats",
+        "seed": 16,
+        "region": "Midwest",
+        "logoUrl": "https://a.espncdn.com/i/teamlogos/ncaa/500/2514.png"
+    },
+    {
+        "name": "Southern Jaguars",
+        "seed": 16,
+        "region": "South",
+        "logoUrl": "https://a.espncdn.com/i/teamlogos/ncaa/500/2582.png"
+    }
+]
