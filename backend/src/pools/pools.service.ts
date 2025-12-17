@@ -87,6 +87,18 @@ export class PoolsService {
     return pool;
   }
 
+  async findOneByName(name: string): Promise<Pool> {
+    const pool = await this.poolsRepository.findOne({
+      where: { name },
+    });
+
+    if (!pool) {
+      throw new NotFoundException('Pool not found');
+    }
+
+    return this.findOne(pool.id);
+  }
+
   async findOnePublic(id: string): Promise<Pool> {
     return this.findOne(id);
   }

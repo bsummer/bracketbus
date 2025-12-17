@@ -33,6 +33,10 @@ export const poolsApi = {
     const response = await apiClient.get<Pool>(`/pools/${id}/public`);
     return response.data;
   },
+  getByName: async (name: string): Promise<Pool> => {
+    const response = await apiClient.get<Pool>(`/pools/by-name/${encodeURIComponent(name)}`);
+    return response.data;
+  },
   create: async (data: CreatePoolDto): Promise<Pool> => {
     const response = await apiClient.post<Pool>('/pools', data);
     return response.data;

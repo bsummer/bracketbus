@@ -1,0 +1,155 @@
+.container {
+  min-height: 100vh;
+  background-color: #f5f5f5;
+}
+
+.header {
+  background: white;
+  padding: 20px 40px;
+  border-bottom: 1px solid #ddd;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.title {
+  margin: 0;
+  font-size: 24px;
+  font-weight: bold;
+  color: #333;
+}
+
+.content {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 40px 20px;
+}
+
+.roundSection {
+  margin-bottom: 40px;
+}
+
+.roundTitle {
+  margin: 0 0 20px 0;
+  font-size: 20px;
+  font-weight: bold;
+  color: #333;
+  padding-bottom: 8px;
+  border-bottom: 2px solid #007AFF;
+}
+
+.gamesGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 20px;
+}
+
+.gameCard {
+  background: white;
+  border: 2px solid #ddd;
+  border-radius: 8px;
+  padding: 20px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.gameCard:hover {
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  border-color: #007AFF;
+}
+
+.gameHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.gameNumber {
+  font-size: 14px;
+  font-weight: 600;
+  color: #666;
+}
+
+.status {
+  padding: 4px 12px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.scheduled {
+  background-color: #E3F2FD;
+  color: #1976D2;
+}
+
+.inProgress {
+  background-color: #FFF3E0;
+  color: #F57C00;
+}
+
+.completed {
+  background-color: #E8F5E9;
+  color: #388E3C;
+}
+
+.teams {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.team {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px;
+  border-radius: 6px;
+  background: #f9f9f9;
+}
+
+.team.winner {
+  background: #E8F5E9;
+  font-weight: 600;
+}
+
+.seed {
+  font-size: 12px;
+  color: #666;
+  min-width: 30px;
+}
+
+.teamName {
+  flex: 1;
+  font-size: 14px;
+  color: #333;
+}
+
+.score {
+  font-size: 16px;
+  font-weight: bold;
+  color: #007AFF;
+  min-width: 30px;
+  text-align: right;
+}
+
+.vs {
+  text-align: center;
+  font-size: 12px;
+  color: #999;
+  font-weight: 600;
+  margin: 4px 0;
+}
+
+.winnerBadge {
+  margin-top: 12px;
+  padding: 8px;
+  background: #E8F5E9;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #388E3C;
+  text-align: center;
+}
+

@@ -131,13 +131,37 @@ export class BracketsService {
       const game = games.find((g) => g.id === pick.gameId);
       if (!game) continue;
 
-      if (
-        pick.predictedWinnerId !== game.team1Id &&
-        pick.predictedWinnerId !== game.team2Id
-      ) {
-        throw new BadRequestException(
-          `Predicted winner must be one of the teams in game ${game.id}`,
+      // Round 1 games have team1Id and team2Id populated
+      if (game.round === 1) {
+        if (
+          pick.predictedWinnerId !== game.team1Id &&
+          pick.predictedWinnerId !== game.team2Id
+        ) {
+          throw new BadRequestException(
+            `Predicted winner must be one of the teams in game ${game.id}`,
+          );
+        }
+      } else {
+        // Round 2+ games: validate against parent game picks
+        // Get all picks for this bracket to find parent picks
+        const parentGame1Pick = createBracketDto.picks.find(
+          (p) => p.gameId === game.parentGame1Id
         );
+        const parentGame2Pick = createBracketDto.picks.find(
+          (p) => p.gameId === game.parentGame2Id
+        );
+
+        // Validate that predicted winner is from one of the parent picks
+        const validTeamIds = [
+          parentGame1Pick?.predictedWinnerId,
+          parentGame2Pick?.predictedWinnerId,
+        ].filter(Boolean);
+
+        if (!validTeamIds.includes(pick.predictedWinnerId)) {
+          throw new BadRequestException(
+            `Predicted winner must be from one of the parent games for game ${game.id}`,
+          );
+        }
       }
     }
 

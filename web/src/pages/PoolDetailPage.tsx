@@ -7,20 +7,28 @@ import { useAuth } from '../context/AuthContext';
 import './PoolDetailPage.css';
 
 const PoolDetailPage = () => {
-  const { id } = useParams<{ id: string }>();
+  const { id, poolName } = useParams<{ id?: string, poolName?: string }>();
   const { user } = useAuth();
   const [pool, setPool] = useState<Pool | null>(null);
   const [loading, setLoading] = useState(true);
+  const identifier = poolName || id;
 
   useEffect(() => {
-    if (id) {
+    if (identifier) {
       loadPool();
     }
-  }, [id]);
+  }, [identifier]);
 
   const loadPool = async () => {
     try {
-      const data = await poolsApi.getOne(id!);
+      let data: Pool;
+      console.log('poolName', poolName);
+      console.log('id', id);
+      if (poolName) {
+        data = await poolsApi.getByName(poolName!);
+      } else {
+        data = await poolsApi.getOne(id!);
+      }
       setPool(data);
     } catch (error) {
       console.error('Failed to load pool:', error);

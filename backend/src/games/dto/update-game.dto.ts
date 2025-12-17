@@ -1,4 +1,4 @@
-import { IsOptional, IsEnum, IsString, IsNumber } from 'class-validator';
+import { IsOptional, IsEnum, IsString, IsNumber, IsDateString } from 'class-validator';
 import { GameStatus } from '../../common/entities/game.entity';
 
 export class UpdateGameDto {
@@ -17,5 +17,9 @@ export class UpdateGameDto {
   @IsOptional()
   @IsEnum(GameStatus)
   status?: GameStatus;
+
+  @IsOptional()
+  @IsDateString()
+  gameDate?: Date;
 }
 

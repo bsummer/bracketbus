@@ -53,6 +53,37 @@ const BracketDetailPage = () => {
     return acc;
   }, {});
 
+  const getTeamsForGame = (game: any, allPicks: any[]): { team1: any; team2: any } => {
+    // Round 1 games have teams populated
+    if (game.round === 1) {
+      return {
+        team1: game.team1,
+        team2: game.team2,
+      };
+    }
+  
+    // For Round 2+, get teams from parent game picks
+    let team1 = null;
+    let team2 = null;
+  
+    if (game.parentGame1Id) {
+      const parent1Pick = allPicks.find((p) => p.gameId === game.parentGame1Id);
+      if (parent1Pick?.predictedWinner) {
+        team1 = parent1Pick.predictedWinner;
+      }
+    }
+  
+    if (game.parentGame2Id) {
+      const parent2Pick = allPicks.find((p) => p.gameId === game.parentGame2Id);
+      if (parent2Pick?.predictedWinner) {
+        team2 = parent2Pick.predictedWinner;
+      }
+    }
+  
+    return { team1, team2 };
+  };
+  
+
   return (
     <div>
       <Header />
@@ -77,17 +108,18 @@ const BracketDetailPage = () => {
                   const predicted = pick.predictedWinner;
                   const actual = game?.winner;
                   const isCorrect = actual && predicted?.id === actual.id;
-
+                  const { team1, team2 } = getTeamsForGame(game, bracket.picks || []);
+                  
                   return (
                     <div key={pick.id} className="pick-card">
                       <div className="game-info">Game {game?.gameNumber}</div>
                       <div className="pick-info">
                         <div className="team">
-                          {game?.team1?.name} (#{game?.team1?.seed})
+                          {team1?.name} (#{team1?.seed})
                         </div>
                         <div className="vs">vs</div>
                         <div className="team">
-                          {game?.team2?.name} (#{game?.team2?.seed})
+                          {team2?.name} (#{team2?.seed})
                         </div>
                       </div>
                       <div className="prediction">

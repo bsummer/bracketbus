@@ -9,6 +9,8 @@ import PoolListPage from './pages/PoolListPage';
 import CreatePoolPage from './pages/CreatePoolPage';
 import PoolDetailPage from './pages/PoolDetailPage';
 import PublicPoolPage from './pages/PublicPoolPage';
+import GamesListPage from './pages/GamesListPage';
+import EditGamePage from './pages/EditGamePage';
 import './App.css';
 
 const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -80,6 +82,30 @@ function AppRoutes() {
       />
       <Route
         path="/pools/:id"
+        element={
+          <ProtectedRoute>
+            <PoolDetailPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/admin/games"
+        element={
+          <ProtectedRoute>
+            <GamesListPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/admin/games/:id"
+        element={
+          <ProtectedRoute>
+            <EditGamePage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/:poolName"
         element={
           <ProtectedRoute>
             <PoolDetailPage />

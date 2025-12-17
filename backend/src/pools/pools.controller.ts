@@ -35,6 +35,11 @@ export class PoolsController {
     return this.poolsService.findOnePublic(id);
   }
 
+  @Get('by-name/:name')
+  findOneByName(@Param('name') name: string) {
+    return this.poolsService.findOneByName(name);
+  }
+
   @Get(':id/public')
   findOnePublic(@Param('id') id: string) {
     return this.poolsService.findOnePublic(id);
