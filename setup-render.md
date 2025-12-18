@@ -53,10 +53,10 @@ You'll need to extract these values:
 
 ### Build & Deploy Settings
 
-- **Build Command**: `npm ci && npm run build`
+- **Build Command**: `npm install && npm run build`
 - **Start Command**: `npm run start:prod`
 
-**Note**: We use `npm ci` instead of `npm install` to ensure devDependencies (like `@nestjs/cli`) are installed during the build process. The build scripts in `package.json` use `npx nest build` to ensure the NestJS CLI is available.
+**Note**: The build scripts in `package.json` use `node_modules/.bin/nest build` as the primary method, with `npx nest build` as a fallback. This ensures the NestJS CLI is found even if `npx` has PATH issues. Make sure your build command uses `npm install` (not `npm install --production`) to install devDependencies.
 
 ### Environment Variables
 
@@ -210,10 +210,11 @@ Replace `bracketbus-backend` with your actual Render service name.
 - Check build logs in Render dashboard for specific errors
 - Ensure all dependencies are in `package.json`
 - Verify Node.js version compatibility
-- **"nest: not found" error**: 
-  - Make sure your build command uses `npm ci` (not `npm install --production`)
-  - The `package.json` scripts should use `npx nest build` instead of `nest build`
-  - Alternatively, update Render build command to: `npm install && npm run build`
+- **"nest: not found" or "could not determine executable to run" error**: 
+  - Make sure your build command uses `npm install` (not `npm install --production`) to install devDependencies
+  - The `package.json` scripts use `node_modules/.bin/nest build` with `npx nest build` as fallback
+  - If still failing, try updating Render build command to: `npm install && ./node_modules/.bin/nest build`
+  - Alternative: Move `@nestjs/cli` from `devDependencies` to `dependencies` in `package.json` (not recommended but works)
 
 ### Database Connection Errors
 
