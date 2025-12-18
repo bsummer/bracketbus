@@ -3,11 +3,11 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-    "build": "./node_modules/.bin/nest build",
+    "build": "nest build",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
-    "start": "./node_modules/.bin/nest start",
-    "start:dev": "./node_modules/.bin/nest start --watch",
-    "start:debug": "./node_modules/.bin/nest start --debug --watch",
+    "start": "nest start",
+    "start:dev": "nest start --watch",
+    "start:debug": "nest start --debug --watch",
     "start:prod": "node dist/main",
     "lint": "eslint \"{src,apps,libs,test}/**/*.ts\" --fix",
     "test": "jest",
@@ -28,6 +28,7 @@
   "license": "ISC",
   "description": "",
   "dependencies": {
+    "@nestjs/cli": "^11.0.14",
     "@nestjs/common": "^11.1.9",
     "@nestjs/config": "^4.0.2",
     "@nestjs/core": "^11.1.9",
@@ -50,7 +51,6 @@
     "typeorm": "^0.3.28"
   },
   "devDependencies": {
-    "@nestjs/cli": "^11.0.14",
     "@types/bcrypt": "^6.0.0",
     "@types/node": "^25.0.2",
     "@types/passport-jwt": "^4.0.1",

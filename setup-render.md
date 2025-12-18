@@ -211,10 +211,10 @@ Replace `bracketbus-backend` with your actual Render service name.
 - Ensure all dependencies are in `package.json`
 - Verify Node.js version compatibility
 - **"nest: not found" or "could not determine executable to run" error**: 
-  - Make sure your build command uses `npm install` (not `npm install --production`) to install devDependencies
-  - The `package.json` scripts use `node_modules/.bin/nest build` with `npx nest build` as fallback
-  - If still failing, try updating Render build command to: `npm install && ./node_modules/.bin/nest build`
-  - Alternative: Move `@nestjs/cli` from `devDependencies` to `dependencies` in `package.json` (not recommended but works)
+  - The `@nestjs/cli` package should be in `dependencies` (not `devDependencies`) to ensure it's installed during build
+  - Make sure your build command uses `npm install` (not `npm install --production`)
+  - If using `npm ci`, ensure it's not skipping devDependencies: `npm ci --include=dev`
+  - Verify the build command in Render is: `npm install && npm run build`
 
 ### Database Connection Errors
 
