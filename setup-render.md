@@ -1,6 +1,6 @@
-# Deploying BracketBus Backend to Render (Free Tier)
+# Deploying BracketBus to Render (Free Tier)
 
-This guide will help you deploy the NestJS backend service to Render's free tier so you can collaborate with others.
+This guide will help you deploy both the NestJS backend service and React web frontend to Render's free tier so you can collaborate with others.
 
 ## Prerequisites
 
@@ -200,21 +200,125 @@ npm run migration:run
 npm run seed
 ```
 
-## Step 5: Update Frontend API URL
+## Step 5: Deploy Web Frontend
 
-If you're deploying the frontend, update your frontend environment variables:
+Deploy the React frontend as a separate web service on Render.
+
+### Create Frontend Web Service
+
+1. In Render Dashboard, click **"New +"** → **"Web Service"**
+2. Connect the same Git repository (or create a new service from the same repo)
+3. Configure the service:
+
+#### Basic Settings
+
+- **Name**: `bracketbus-web` (or your preferred name)
+- **Environment**: `Node`
+- **Region**: Same region as your backend (for better performance)
+- **Branch**: `main` (or your default branch)
+- **Root Directory**: `web`
+
+#### Build & Deploy Settings
+
+- **Build Command**: `npm install && npm run build`
+- **Start Command**: `npx serve -s dist -l 10000`
+
+**Note**: 
+- The `serve` package will be installed automatically via `npx`
+- The `-s` flag enables single-page app mode (routes work correctly)
+- The `-l 10000` sets the port (Render sets PORT automatically, but this works as a fallback)
+- Alternatively, you can add `serve` to `package.json` dependencies (see below)
+
+#### Environment Variables
+
+Add the following environment variable:
 
 ```
-VITE_API_URL=https://bracketbus-backend.onrender.com/api
+VITE_API_URL=https://your-backend-service-name.onrender.com/api
 ```
 
-Replace `bracketbus-backend` with your actual Render service name.
+Replace `your-backend-service-name` with your actual backend service name from Step 2.
 
-## Step 6: Verify Deployment
+**Important**: 
+- The `VITE_` prefix is required for Vite to expose the variable to the client
+- Use the full URL including `https://` and `/api` path
+- This should be your backend's Render URL
+
+### Alternative: Add serve to package.json
+
+If you want to explicitly include the serve package, add it to `web/package.json`:
+
+```json
+{
+  "scripts": {
+    "preview": "vite preview",
+    "start": "serve -s dist -l 10000"
+  },
+  "dependencies": {
+    "serve": "^14.2.0"
+  }
+}
+```
+
+Then use **Start Command**: `npm run start`
+
+### Update Backend CORS
+
+Update `backend/src/main.ts` to allow your frontend URL:
+
+```typescript
+app.enableCors({
+  origin: [
+    'http://localhost:5173',
+    'http://localhost:3000',
+    'http://localhost:19006',
+    'https://bracketbus-web.onrender.com', // Add your frontend Render URL
+    process.env.FRONTEND_URL, // Or use environment variable
+  ].filter(Boolean),
+  credentials: true,
+});
+```
+
+Or add `FRONTEND_URL` environment variable to your backend service:
+```
+FRONTEND_URL=https://bracketbus-web.onrender.com
+```
+
+Then update `main.ts` to use it:
+```typescript
+origin: [
+  'http://localhost:5173',
+  'http://localhost:3000',
+  'http://localhost:19006',
+  process.env.FRONTEND_URL,
+].filter(Boolean),
+```
+
+### Verify Deployment
+
+1. After deployment, visit your frontend URL: `https://bracketbus-web.onrender.com`
+2. The app should load and connect to your backend API
+3. Test login with the seeded test users (admin/admin123)
+
+## Step 6: Update Frontend API URL (Local Development)
+
+For local development, update your frontend `.env` file:
+
+```
+VITE_API_URL=https://your-backend-service-name.onrender.com/api
+```
+
+Or keep it pointing to localhost for local development:
+```
+VITE_API_URL=http://localhost:3000/api
+```
+
+## Step 6: Verify Backend Deployment
 
 1. Check the **"Logs"** tab in Render dashboard for any errors
-2. Test your API endpoint: `https://your-service-name.onrender.com/api`
+2. Test your API endpoint: `https://your-backend-service-name.onrender.com/api`
 3. You should see a response (or 404 for root, which is expected)
+4. Test the health endpoint if you have one, or try: `https://your-backend-service-name.onrender.com/api/auth/login`
 
 ## Important Notes for Free Tier
 
@@ -282,6 +386,7 @@ For easier setup and version control, you can create a `render.yaml` file in you
 
 ```yaml
 services:
+  # Backend Service
   - type: web
     name: bracketbus-backend
     env: node
@@ -317,6 +422,19 @@ services:
         generateValue: true
       - key: JWT_EXPIRES_IN
         value: 24h
+      - key: FRONTEND_URL
+        value: https://bracketbus-web.onrender.com
+
+  # Frontend Service
+  - type: web
+    name: bracketbus-web
+    env: node
+    rootDir: web
+    buildCommand: npm install && npm run build
+    startCommand: npx serve -s dist -l 10000
+    envVars:
+      - key: VITE_API_URL
+        value: https://bracketbus-backend.onrender.com/api
 
 databases:
   - name: bracketbus-db
@@ -324,17 +442,23 @@ databases:
     plan: free
 ```
 
+**Note**: When using `render.yaml`, make sure to update the `FRONTEND_URL` and `VITE_API_URL` values with your actual service names after deployment.
+
 When you connect your repository, Render will automatically detect and use this configuration.
 
 ## Next Steps
 
 After successful deployment:
 
-1. Test all API endpoints
-2. Set up your frontend to point to the Render backend
-3. Share the backend URL with your collaborator
-4. Consider setting up a custom domain (optional, requires paid plan)
-5. Monitor logs and performance in the Render dashboard
+1. **Seed the database** using the seed endpoint (see Step 4)
+2. **Test backend API endpoints** - verify they're working correctly
+3. **Test frontend** - visit your frontend URL and verify it connects to the backend
+4. **Test login** - use the seeded test users (admin/admin123) to verify authentication
+5. **Share URLs with collaborators**:
+   - Frontend: `https://bracketbus-web.onrender.com`
+   - Backend API: `https://bracketbus-backend.onrender.com/api`
+6. **Monitor logs** in the Render dashboard for any issues
+7. **Consider custom domains** (optional, requires paid plan)
 
 ## Getting Help
 
