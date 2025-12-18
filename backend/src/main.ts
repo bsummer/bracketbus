@@ -11,6 +11,8 @@ async function bootstrap() {
       'http://localhost:5173',
       'http://localhost:3000',
       'http://localhost:19006',
+      'https://gobracketbus.onrender.com', // Add your frontend Render URL
+      process.env.FRONTEND_URL,
     ],
     credentials: true,
   });
