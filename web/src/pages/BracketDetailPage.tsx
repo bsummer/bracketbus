@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 import Header from '../components/common/Header';
 import { bracketsApi } from '../api/brackets';
 import type { Bracket } from '../api/brackets';

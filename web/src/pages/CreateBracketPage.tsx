@@ -5,9 +5,7 @@ import { bracketsApi } from '../api/brackets';
 import { poolsApi } from '../api/pools';
 import type { Pool } from '../api/pools';
 import { gamesApi } from '../api/games';
-import { teamsApi } from '../api/teams';
 import type { Game } from '../api/games';
-import type { Team } from '../api/teams';
 import './CreateBracketPage.css';
 
 const CreateBracketPage = () => {
@@ -16,7 +14,6 @@ const CreateBracketPage = () => {
   const [poolId, setPoolId] = useState('');
   const [pools, setPools] = useState<Pool[]>([]);
   const [games, setGames] = useState<Game[]>([]);
-  const [teams, setTeams] = useState<Team[]>([]);
   const [picks, setPicks] = useState<{ [gameId: string]: string }>({});
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
@@ -34,14 +31,12 @@ const CreateBracketPage = () => {
 
   const loadData = async () => {
     try {
-      const [poolsData, gamesData, teamsData] = await Promise.all([
+      const [poolsData, gamesData] = await Promise.all([
         poolsApi.getAll(),
         gamesApi.getAll(),
-        teamsApi.getAll(),
       ]);
       setPools(poolsData);
       setGames(gamesData.sort((a, b) => a.round - b.round || a.gameNumber - b.gameNumber));
-      setTeams(teamsData);
     } catch (error) {
       console.error('Failed to load data:', error);
     }
@@ -54,10 +49,9 @@ const CreateBracketPage = () => {
       const tournamentId = pool.tournamentId;
 
       // Load all data
-      const [poolsData, allGamesData, teamsData] = await Promise.all([
+      const [poolsData, allGamesData] = await Promise.all([
         poolsApi.getAll(),
         gamesApi.getAll(),
-        teamsApi.getAll(),
       ]);
 
       // Filter games by tournamentId
@@ -67,7 +61,6 @@ const CreateBracketPage = () => {
 
       setPools(poolsData);
       setGames(tournamentGames.sort((a, b) => a.round - b.round || a.gameNumber - b.gameNumber));
-      setTeams(teamsData);
     } catch (error) {
       console.error('Failed to load pool and games:', error);
       // Fallback to loading all data
@@ -88,29 +81,29 @@ const CreateBracketPage = () => {
     }, {} as Record<number, Game[]>);
   }, [games]);
 
-  // Calculate round completion status
-  const roundStatus = useMemo(() => {
-    const status: Record<number, { completed: number; total: number; isComplete: boolean }> = {};
-    
-    Object.keys(gamesByRound).forEach((roundStr) => {
-      const round = Number(roundStr);
-      const roundGames = gamesByRound[round];
-      const completed = roundGames.filter((game) => picks[game.id]).length;
-      status[round] = {
-        completed,
-        total: roundGames.length,
-        isComplete: completed === roundGames.length,
-      };
-    });
-    
-    return status;
-  }, [gamesByRound, picks]);
+  // Calculate round completion status (commented out - not currently used)
+  // const roundStatus = useMemo(() => {
+  //   const status: Record<number, { completed: number; total: number; isComplete: boolean }> = {};
+  //   
+  //   Object.keys(gamesByRound).forEach((roundStr) => {
+  //     const round = Number(roundStr);
+  //     const roundGames = gamesByRound[round];
+  //     const completed = roundGames.filter((game) => picks[game.id]).length;
+  //     status[round] = {
+  //       completed,
+  //       total: roundGames.length,
+  //       isComplete: completed === roundGames.length,
+  //     };
+  //   });
+  //   
+  //   return status;
+  // }, [gamesByRound, picks]);
   
-  // Get the current active round (first incomplete round)
-  const activeRound = useMemo(() => {
-    const rounds = Object.keys(gamesByRound).map(Number).sort((a, b) => a - b);
-    return rounds.find((round) => !roundStatus[round]?.isComplete) || rounds[rounds.length - 1];
-  }, [gamesByRound, roundStatus]);
+  // Get the current active round (first incomplete round) - commented out, not currently used
+  // const activeRound = useMemo(() => {
+  //   const rounds = Object.keys(gamesByRound).map(Number).sort((a, b) => a - b);
+  //   return rounds.find((round) => !roundStatus[round]?.isComplete) || rounds[rounds.length - 1];
+  // }, [gamesByRound, roundStatus]);
 
   // Get available teams for a game based on parent game picks
   const getAvailableTeams = (game: Game): { team1: Game['team1'] | null; team2: Game['team2'] | null } => {
@@ -229,10 +222,6 @@ const CreateBracketPage = () => {
     }
   };
 
-  const getTeam = (teamId: string | null) => {
-    if (!teamId) return null;
-    return teams.find((t) => t.id === teamId);
-  };
 
   return (
     <div>

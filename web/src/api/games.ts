@@ -13,6 +13,7 @@ export interface Game {
   scoreTeam1: number | null;
   scoreTeam2: number | null;
   status: string;
+  gameDate?: string | null;
   team1?: any;
   team2?: any;
   winner?: any;
