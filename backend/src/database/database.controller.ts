@@ -33,10 +33,44 @@ export class DatabaseController {
     }
 
     try {
+      // Initialize data source if not already initialized
+      if (!AppDataSource.isInitialized) {
+        await AppDataSource.initialize();
+      }
+
+      // Enable UUID extension if not already enabled
+      try {
+        await AppDataSource.query('CREATE EXTENSION IF NOT EXISTS "uuid-ossp"');
+        console.log('UUID extension enabled');
+      } catch (error: any) {
+        // Extension might already exist or user might not have permission
+        // Continue anyway as it might not be critical
+        console.log('Note: Could not enable UUID extension (may already exist):', error.message);
+      }
+
+      // Check if schema exists by trying to query a table
+      let schemaExists = false;
+      try {
+        await AppDataSource.query('SELECT 1 FROM users LIMIT 1');
+        schemaExists = true;
+      } catch (error: any) {
+        // Table doesn't exist, need to create schema
+        schemaExists = false;
+      }
+
+      // Create schema if it doesn't exist
+      if (!schemaExists) {
+        console.log('Schema not found. Creating database schema...');
+        await AppDataSource.synchronize();
+        console.log('Database schema created successfully');
+      }
+
+      // Now seed the database
       await seedDatabase(AppDataSource);
+      
       return {
         success: true,
-        message: 'Database seeded successfully',
+        message: 'Database schema created and seeded successfully',
       };
     } catch (error: any) {
       return {
