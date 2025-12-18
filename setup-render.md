@@ -108,7 +108,87 @@ async function bootstrap() {
 
 After the first deployment, you need to set up your database schema and seed initial data.
 
-### Option A: Using Render Shell (Recommended for Free Tier)
+**Note**: Render's free tier does not include shell access. Use the HTTP endpoint method below.
+
+### Database Schema (Migrations)
+
+The database schema will be created automatically on first startup because `synchronize` is enabled in development mode. For production, you should use migrations, but for the free tier, the automatic schema creation will work.
+
+### Seed Database Using HTTP Endpoint (Free Tier Compatible)
+
+The application includes a seed endpoint that can be called via HTTP. This works on the free tier without shell access.
+
+**Method 1: Using SEED_SECRET (Recommended for Production)**
+
+1. **Add a SEED_SECRET environment variable** in your Render dashboard:
+   ```
+   SEED_SECRET=<generate a strong random string>
+   ```
+   You can generate one with: `openssl rand -base64 32`
+
+2. **Call the seed endpoint with the secret**:
+   ```bash
+   curl -X POST https://your-service-name.onrender.com/api/database/seed \
+     -H "Authorization: Bearer YOUR_SEED_SECRET_HERE"
+   ```
+   
+   Replace `YOUR_SEED_SECRET_HERE` with the value you set in step 1.
+
+3. **Verify the seed was successful** - you should see a response like:
+   ```json
+   {
+     "success": true,
+     "message": "Database seeded successfully"
+   }
+   ```
+
+**Method 2: Allow Public Seeding (Development Only)**
+
+For initial setup, you can temporarily allow public seeding:
+
+1. **Add environment variable** in Render dashboard:
+   ```
+   ALLOW_PUBLIC_SEED=true
+   ```
+
+2. **Call the seed endpoint** (no auth required):
+   ```bash
+   curl -X POST https://your-service-name.onrender.com/api/database/seed
+   ```
+
+3. **Remove the `ALLOW_PUBLIC_SEED` variable** after seeding for security.
+
+**Method 3: Using JWT Authentication**
+
+If you already have a user account:
+
+1. **Login to get a JWT token**:
+   ```bash
+   curl -X POST https://your-service-name.onrender.com/api/auth/login \
+     -H "Content-Type: application/json" \
+     -d '{"username":"admin","password":"admin123"}'
+   ```
+   
+   Copy the `access_token` from the response.
+
+2. **Call the seed endpoint**:
+   ```bash
+   curl -X POST https://your-service-name.onrender.com/api/database/seed \
+     -H "Authorization: Bearer YOUR_ACCESS_TOKEN_HERE"
+   ```
+
+**Note**: The seed endpoint creates test users (admin/admin123, user1/user123, user2/user123), tournament data, teams, and games. If data already exists, it will skip creating duplicates.
+
+**Using Postman or Browser Extension**
+
+If you prefer a GUI:
+- For Method 1: `POST /api/database/seed` with header: `Authorization: Bearer <SEED_SECRET>`
+- For Method 2: `POST /api/database/seed` (no headers needed if `ALLOW_PUBLIC_SEED=true`)
+- For Method 3: Login first, then `POST /api/database/seed` with header: `Authorization: Bearer <JWT_TOKEN>`
+
+### Option B: Using Render Shell (Paid Tier Only)
+
+If you upgrade to a paid tier with shell access:
 
 1. Go to your web service in Render Dashboard
 2. Click on **"Shell"** tab
@@ -119,48 +199,6 @@ cd backend
 npm run migration:run
 npm run seed
 ```
-
-### Option B: Add Deployment Script
-
-Create `backend/scripts/deploy.ts`:
-
-```typescript
-import { AppDataSource } from '../src/data-source';
-
-async function deploy() {
-  try {
-    await AppDataSource.initialize();
-    console.log('Database connected');
-    
-    // Run migrations
-    await AppDataSource.runMigrations();
-    console.log('Migrations completed');
-    
-    // Seed database
-    const { seedDatabase } = require('../src/database/seeds/seed');
-    await seedDatabase(AppDataSource);
-    console.log('Database seeded');
-    
-    await AppDataSource.destroy();
-    process.exit(0);
-  } catch (error) {
-    console.error('Deployment failed:', error);
-    process.exit(1);
-  }
-}
-
-deploy();
-```
-
-Add to `backend/package.json`:
-
-```json
-"scripts": {
-  "deploy": "ts-node -r tsconfig-paths/register scripts/deploy.ts"
-}
-```
-
-Then run via Render Shell: `npm run deploy`
 
 ## Step 5: Update Frontend API URL
 

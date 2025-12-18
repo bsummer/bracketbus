@@ -9,6 +9,7 @@ import { BracketsModule } from './brackets/brackets.module';
 import { PoolsModule } from './pools/pools.module';
 import { GamesModule } from './games/games.module';
 import { TeamsModule } from './teams/teams.module';
+import { DatabaseController } from './database/database.controller';
 import { getDatabaseConfig } from './database/database.config';
 
 @Module({
@@ -24,7 +25,7 @@ import { getDatabaseConfig } from './database/database.config';
     GamesModule,
     TeamsModule,
   ],
-  controllers: [AppController],
+  controllers: [AppController, DatabaseController],
   providers: [AppService],
 })
 export class AppModule {}
