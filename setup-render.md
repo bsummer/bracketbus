@@ -53,8 +53,10 @@ You'll need to extract these values:
 
 ### Build & Deploy Settings
 
-- **Build Command**: `npm install && npm run build`
+- **Build Command**: `npm ci && npm run build`
 - **Start Command**: `npm run start:prod`
+
+**Note**: We use `npm ci` instead of `npm install` to ensure devDependencies (like `@nestjs/cli`) are installed during the build process. The build scripts in `package.json` use `npx nest build` to ensure the NestJS CLI is available.
 
 ### Environment Variables
 
@@ -208,6 +210,10 @@ Replace `bracketbus-backend` with your actual Render service name.
 - Check build logs in Render dashboard for specific errors
 - Ensure all dependencies are in `package.json`
 - Verify Node.js version compatibility
+- **"nest: not found" error**: 
+  - Make sure your build command uses `npm ci` (not `npm install --production`)
+  - The `package.json` scripts should use `npx nest build` instead of `nest build`
+  - Alternatively, update Render build command to: `npm install && npm run build`
 
 ### Database Connection Errors
 
