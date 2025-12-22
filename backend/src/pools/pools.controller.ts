@@ -35,6 +35,13 @@ export class PoolsController {
     return this.poolsService.findOnePublic(id);
   }
 
+  @Get('by-code/:inviteCode')
+  findOneByCode(@Param('inviteCode') inviteCode: string) {
+    console.log('inviteCode', inviteCode);
+    console.log('findOneByCode', this.poolsService.findOneByCode(inviteCode));
+    return this.poolsService.findOneByCode(inviteCode);
+  }
+
   @Get('by-name/:name')
   findOneByName(@Param('name') name: string) {
     return this.poolsService.findOneByName(name);

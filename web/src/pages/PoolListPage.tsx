@@ -33,8 +33,11 @@ const PoolListPage = () => {
     }
     try {
       // Find pool by invite code
-      const allPools = await poolsApi.getAll();
-      const pool = allPools.find((p) => p.inviteCode === inviteCode);
+      // const allPools = await poolsApi.getAll();
+      console.log('inviteCode', inviteCode);
+      // console.log('allPools', allPools);
+      const pool = await poolsApi.getByCode(inviteCode);
+      // const pool = allPools.find((p) => p.inviteCode === inviteCode);
       if (!pool) {
         alert('Pool not found');
         return;

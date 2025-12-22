@@ -93,6 +93,18 @@ export class PoolsService {
     return pool;
   }
 
+  async findOneByCode(inviteCode: string): Promise<Pool> {
+    const pool = await this.poolsRepository.findOne({
+      where: { inviteCode }
+    });
+
+    if (!pool) {
+      throw new NotFoundException('Pool not found');
+    }
+
+    return this.findOne(pool.id);
+  }
+
   async findOneByName(name: string): Promise<Pool> {
     const pool = await this.poolsRepository.findOne({
       where: { name },
