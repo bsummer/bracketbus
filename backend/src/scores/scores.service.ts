@@ -38,7 +38,7 @@ export class ScoresService {
     if (!game || !game.winnerId) {
       return; // Game doesn't exist or has no winner yet
     }
-
+    
     // Get all picks for this game
     const picks = await this.picksRepository.find({
       where: { gameId },

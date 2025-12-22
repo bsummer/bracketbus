@@ -1,7 +1,7 @@
 import { Injectable, NotFoundException, ForbiddenException, ConflictException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, In } from 'typeorm';
-import { Pool, PoolMember, PoolMemberStatus, User, Tournament } from '../common/entities';
+import { Pool, PoolMember, PoolMemberStatus, User, Tournament, Bracket } from '../common/entities';
 import { CreatePoolDto } from './dto/create-pool.dto';
 import { JoinPoolDto } from './dto/join-pool.dto';
 import { AddMemberDto } from './dto/add-member.dto';
@@ -209,19 +209,23 @@ export class PoolsService {
   async getLeaderboard(poolId: string) {
     const pool = await this.findOne(poolId);
     // TODO: Calculate scores and return leaderboard
-    return pool.brackets || [];
+    return this.leaderboard(pool.brackets);
   }
 
   async getMembers(poolId: string) {
     const pool = await this.findOne(poolId);
     const brackets = pool.brackets || [];
 
+    return this.leaderboard(brackets);
+  }
+
+  async leaderboard(brackets: Bracket[]) {
     // Get scores for all brackets
     const bracketIds = brackets.map((b) => b.id);
     const scores = await this.scoresRepository.find({
       where: { bracketId: In(bracketIds) },
     });
-
+  
     // Combine brackets with their scores and sort by total points
     const leaderboard = brackets.map((bracket) => {
       const score = scores.find((s) => s.bracketId === bracket.id);
@@ -230,11 +234,12 @@ export class PoolsService {
         totalPoints: score?.totalPoints || 0,
       };
     });
-
+  
     // Sort by total points (descending)
     leaderboard.sort((a, b) => b.totalPoints - a.totalPoints);
-
+  
     return leaderboard;
   }
 }
+
 
