@@ -9,6 +9,7 @@ import { BracketsModule } from './brackets/brackets.module';
 import { PoolsModule } from './pools/pools.module';
 import { GamesModule } from './games/games.module';
 import { TeamsModule } from './teams/teams.module';
+import { ScoresModule } from './scores/scores.module';
 import { DatabaseController } from './database/database.controller';
 import { getDatabaseConfig } from './database/database.config';
 
@@ -24,6 +25,7 @@ import { getDatabaseConfig } from './database/database.config';
     PoolsModule,
     GamesModule,
     TeamsModule,
+    ScoresModule,
   ],
   controllers: [AppController, DatabaseController],
   providers: [AppService],

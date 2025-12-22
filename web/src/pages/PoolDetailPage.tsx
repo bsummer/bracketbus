@@ -11,14 +11,25 @@ const PoolDetailPage = () => {
   const { user } = useAuth();
   const [pool, setPool] = useState<Pool | null>(null);
   const [loading, setLoading] = useState(true);
+  const [leaderboard, setLeaderboard] = useState<any[]>([]);
   const identifier = poolName || id;
 
   useEffect(() => {
     if (identifier) {
       loadPool();
+      loadLeaderboard();
     }
   }, [identifier]);
 
+  const loadLeaderboard = async () => {
+    try {
+      const data = await poolsApi.getLeaderboard(id || poolName!);
+      setLeaderboard(data);
+    } catch (error) {
+      console.error('Failed to load leaderboard:', error);
+    }
+  };
+  
   const loadPool = async () => {
     try {
       let data: Pool;
@@ -92,6 +103,25 @@ const PoolDetailPage = () => {
               </div>
             ))}
           </div>
+        </section>
+
+        <section className="section">
+          <h2>Leaderboard</h2>
+          {leaderboard.length === 0 ? (
+            <p>No brackets yet</p>
+          ) : (
+            <div className="bracket-list">
+              {leaderboard.map((bracket: any, index: number) => (
+                <div key={bracket.id} className="leaderboard-item">
+                  <span className="rank">#{index + 1}</span>
+                  <Link to={`/brackets/${bracket.id}`} className="bracket-link">
+                    {bracket.name} - {bracket.user?.username}
+                  </Link>
+                  <span className="score">{bracket.totalPoints || 0} points</span>
+                </div>
+              ))}
+            </div>
+          )}
         </section>
 
         <section className="section">
