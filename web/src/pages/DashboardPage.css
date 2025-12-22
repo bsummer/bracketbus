@@ -26,6 +26,8 @@
   border-radius: 4px;
   font-weight: 500;
   transition: background 0.2s;
+  width: 8em;
+  margin-left: 0.5em;
 }
 
 .btn-primary {

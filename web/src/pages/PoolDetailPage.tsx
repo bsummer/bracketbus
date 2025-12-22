@@ -57,14 +57,24 @@ const PoolDetailPage = () => {
 
   const isCreator = pool.creatorId === user?.id;
 
+  // Check if user already has a bracket in this pool
+const hasUserBracket = pool.brackets?.some((bracket: any) => bracket.userId === user?.id);
+
+
   return (
     <div>
       <Header />
       <div className="page">
-        <h1>{pool.name}</h1>
-        <Link to={`/brackets/new?poolId=${pool.id}`} className="btn btn-primary">
-          Create Bracket
-        </Link>
+        <div className="page-header">
+          <h1>{pool.name}</h1>
+          <div>
+            {!hasUserBracket && (
+              <Link to={`/brackets/new?poolId=${pool.id}`} className="btn btn-primary">
+                Create Bracket
+              </Link>
+            )}
+          </div>
+        </div>
         <div className="pool-info">
           <p>Tournament: {pool.tournament?.name || 'Unknown'}</p>
           <p className="invite-code">Invite Code: {pool.inviteCode}</p>

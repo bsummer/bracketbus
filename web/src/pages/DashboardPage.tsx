@@ -46,9 +46,9 @@ const DashboardPage = () => {
         <div className="dashboard-header">
           <h1>Dashboard</h1>
           <div className="actions">
-            <Link to="/brackets/new" className="btn btn-primary">
+            {/* <Link to="/brackets/new" className="btn btn-primary">
               Create Bracket
-            </Link>
+            </Link> */}
             <Link to="/pools/new" className="btn btn-primary">
               Create Pool
             </Link>
