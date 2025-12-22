@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException, ForbiddenException, ConflictException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Repository, In } from 'typeorm';
 import { Pool, PoolMember, PoolMemberStatus, User, Tournament } from '../common/entities';
 import { CreatePoolDto } from './dto/create-pool.dto';
 import { JoinPoolDto } from './dto/join-pool.dto';
@@ -219,7 +219,7 @@ export class PoolsService {
     // Get scores for all brackets
     const bracketIds = brackets.map((b) => b.id);
     const scores = await this.scoresRepository.find({
-      where: { bracketId: bracketIds.length > 0 ? bracketIds : [] },
+      where: { bracketId: In(bracketIds) },
     });
 
     // Combine brackets with their scores and sort by total points
