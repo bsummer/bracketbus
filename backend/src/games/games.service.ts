@@ -1,13 +1,15 @@
 import { Injectable, ForbiddenException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { Game, GameStatus } from '../common/entities';
+import { Game } from '../common/entities';
+import { ScoresService } from '../scores/scores.service';
 
 @Injectable()
 export class GamesService {
   constructor(
     @InjectRepository(Game)
     private gamesRepository: Repository<Game>,
+    private scoresService: ScoresService,
   ) {}
 
   async findAll(): Promise<Game[]> {
@@ -34,8 +36,16 @@ export class GamesService {
       throw new Error('Game not found');
     }
 
+    const previousWinnerId = game.winnerId;
     Object.assign(game, updateData);
-    return this.gamesRepository.save(game);
+    const updatedGame = await this.gamesRepository.save(game);
+
+    // If winner was updated, recalculate scores for this game
+    if (updateData.winnerId && updateData.winnerId !== previousWinnerId) {
+      await this.scoresService.calculateScoresForGame(id);
+    }
+
+    return updatedGame;
   }
 }
 

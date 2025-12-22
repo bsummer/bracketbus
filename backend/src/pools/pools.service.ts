@@ -5,6 +5,9 @@ import { Pool, PoolMember, PoolMemberStatus, User, Tournament } from '../common/
 import { CreatePoolDto } from './dto/create-pool.dto';
 import { JoinPoolDto } from './dto/join-pool.dto';
 import { AddMemberDto } from './dto/add-member.dto';
+import { ScoresService } from '../scores/scores.service';
+import { Score } from '../common/entities';
+
 
 @Injectable()
 export class PoolsService {
@@ -17,6 +20,9 @@ export class PoolsService {
     private usersRepository: Repository<User>,
     @InjectRepository(Tournament)
     private tournamentsRepository: Repository<Tournament>,
+    @InjectRepository(Score)
+    private scoresRepository: Repository<Score>,
+    private scoresService: ScoresService,
   ) {}
 
   private generateInviteCode(): string {
@@ -208,7 +214,27 @@ export class PoolsService {
 
   async getMembers(poolId: string) {
     const pool = await this.findOne(poolId);
-    return pool.members.filter(m => m.status === PoolMemberStatus.ACTIVE);
+    const brackets = pool.brackets || [];
+
+    // Get scores for all brackets
+    const bracketIds = brackets.map((b) => b.id);
+    const scores = await this.scoresRepository.find({
+      where: { bracketId: bracketIds.length > 0 ? bracketIds : [] },
+    });
+
+    // Combine brackets with their scores and sort by total points
+    const leaderboard = brackets.map((bracket) => {
+      const score = scores.find((s) => s.bracketId === bracket.id);
+      return {
+        ...bracket,
+        totalPoints: score?.totalPoints || 0,
+      };
+    });
+
+    // Sort by total points (descending)
+    leaderboard.sort((a, b) => b.totalPoints - a.totalPoints);
+
+    return leaderboard;
   }
 }
 
