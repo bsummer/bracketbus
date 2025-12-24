@@ -21,7 +21,7 @@ const CreateBracketPage = () => {
   const [games, setGames] = useState<Game[]>([]);
   const [picks, setPicks] = useState<{ [gameId: string]: string }>({});
   const [loading, setLoading] = useState(false);
-  const [initialLoading, setInitialLoading] = useState(isEditMode);
+  const [setInitialLoading] = useState(isEditMode);
   const navigate = useNavigate();
 
   useEffect(() => {
