@@ -1,12 +1,14 @@
 import { useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, Link } from 'react-router-dom';
 import Header from '../components/common/Header';
 import { bracketsApi } from '../api/brackets';
 import type { Bracket } from '../api/brackets';
+import { useAuth } from '../context/AuthContext';
 import './BracketDetailPage.css';
 
 const BracketDetailPage = () => {
   const { id } = useParams<{ id: string }>();
+  const { user } = useAuth();
   const [bracket, setBracket] = useState<Bracket | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -45,7 +47,11 @@ const BracketDetailPage = () => {
     );
   }
 
-  const isLocked = !!bracket.lockedAt;
+  const isLocked = bracket.isLocked;
+  const isOwner = bracket.userId === user?.id;
+  const canEdit = !isLocked && isOwner;
+  console.log('canEdit', canEdit);
+  console.log('isLocked', bracket.isLocked);
   const picksByRound = (bracket.picks || []).reduce((acc: any, pick: any) => {
     const round = pick.game?.round || 0;
     if (!acc[round]) acc[round] = [];
@@ -95,6 +101,11 @@ const BracketDetailPage = () => {
             <p className={isLocked ? 'locked' : 'unlocked'}>
               {isLocked ? '🔒 Locked' : '✏️ Editable'}
             </p>
+            {canEdit && (
+              <Link to={`/brackets/${id}/edit`} className="btn btn-primary">
+                Edit Bracket
+              </Link>
+            )}
           </div>
         </div>
 

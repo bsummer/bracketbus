@@ -6,6 +6,9 @@ export interface Bracket {
   userId: string;
   poolId: string;
   lockedAt: string | null;
+  isLocked: boolean;
+  created_at: Date;
+  updated_at: Date;
   pool?: any;
   picks?: any[];
 }
