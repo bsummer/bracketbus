@@ -114,7 +114,7 @@ const BracketDetailPage = () => {
                     <div key={pick.id} className="pick-card">
                       <div className="game-info">Game {game?.gameNumber}</div>
                       <div className="pick-info">
-                        <div className="team">
+                        <div className={game.winnerId === team1?.id ? "team winner" : "team"}>
                           <span className="logo-container">
                             <img src={team1?.logoUrl} alt={team1?.name} className="team-logo" />
                           </span>
@@ -124,9 +124,12 @@ const BracketDetailPage = () => {
                           <span className="name-container">
                             {team1 ? `${team1?.name}` : 'TBD'}
                           </span>
+                          <span className="team-score">
+                            {game?.scoreTeam1}
+                          </span>
                         </div>
                         <div className="vs">vs</div>
-                        <div className="team">
+                        <div className={game.winnerId === team2?.id ? "team winner" : "team"}>
                           <span className="logo-container">
                             <img src={team2?.logoUrl} alt={team2?.name} className="team-logo" />
                           </span>
@@ -135,6 +138,9 @@ const BracketDetailPage = () => {
                           </span>
                           <span className="name-container">
                             {team2 ? `${team2?.name}` : 'TBD'}
+                          </span>
+                          <span className="team-score">
+                            {game?.scoreTeam2}
                           </span>
                         </div>
                       </div>
@@ -146,11 +152,11 @@ const BracketDetailPage = () => {
                           </span>
                         )}
                       </div>
-                      {actual && (
+                      {/* {actual && (
                         <div className="actual">
                           <strong>Winner:</strong> {actual.name}
                         </div>
-                      )}
+                      )} */}
                       {pick.pointsEarned > 0 && (
                         <div className="points">+{pick.pointsEarned} points</div>
                       )}

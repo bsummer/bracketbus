@@ -111,3 +111,13 @@
   text-align: left;
 }
 
+.team.winner .name-container {
+  font-weight: bold;
+  color: #000
+}
+
+.team.winner .team-score {
+  font-weight: bold;
+  color: #000;
+}
+
