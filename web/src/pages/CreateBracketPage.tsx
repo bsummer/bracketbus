@@ -351,23 +351,43 @@ const CreateBracketPage = () => {
                           {isDisabled && <span className="locked-badge">🔒 Locked</span>}
                         </div>
                         <div className="teams">
-                          <button
-                            type="button"
-                            className={`team-btn ${selectedTeamId === team1?.id ? 'selected' : ''}`}
-                            onClick={() => handlePick(game.id, team1?.id!)}
-                            disabled={!team1?.id || isDisabled}
-                          >
-                            {team1 ? `${team1?.name} (#${team1?.seed})` : 'TBD'}
-                          </button>
+                          <div className="team-container">
+                            <button
+                              type="button"
+                              className={`team-btn ${selectedTeamId === team1?.id ? 'selected' : ''}`}
+                              onClick={() => handlePick(game.id, team1?.id!)}
+                              disabled={!team1?.id}
+                            >
+                              <span className="logo-container">
+                                <img src={team1?.logoUrl} alt={team1?.name} className="team-logo" />
+                              </span>
+                              <span className="seed-container">
+                                {team1?.seed}
+                              </span>
+                              <span className="name-container">
+                               {team1 ? `${team1?.name}` : 'TBD'}
+                              </span>
+                            </button>
+                          </div>
                           <div className="vs">vs</div>
-                          <button
-                            type="button"
-                            className={`team-btn ${selectedTeamId === team2?.id ? 'selected' : ''}`}
-                            onClick={() => handlePick(game.id, team2?.id!)}
-                            disabled={!team2?.id || isDisabled}
-                          >
-                            {team2 ? `${team2?.name} (#${team2?.seed})` : 'TBD'}
-                          </button>
+                          <div className="team-container">
+                            <button
+                              type="button"
+                              className={`team-btn ${selectedTeamId === team2?.id ? 'selected' : ''}`}
+                              onClick={() => handlePick(game.id, team2?.id!)}
+                              disabled={!team2?.id}
+                            >
+                              <span className="logo-container">
+                                <img src={team2?.logoUrl} alt={team2?.name} className="team-logo" />
+                              </span>
+                              <span className="seed-container">
+                                {team2?.seed}
+                              </span>
+                              <span className="name-container">
+                               {team2 ? `${team2?.name}` : 'TBD'}
+                              </span>
+                            </button>
+                          </div>
                         </div>
                       </div>
                     );

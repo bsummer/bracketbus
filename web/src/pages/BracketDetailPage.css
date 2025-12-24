@@ -43,7 +43,18 @@
 }
 
 .team {
-  padding: 0.25rem 0;
+  padding: 0.5rem;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  background: white;
+  color: #666;
+  text-align: left;
+  transition: all 0.2s;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 0.5rem;
+  width: 100%;
 }
 
 .prediction {
@@ -72,5 +83,41 @@
   margin-top: 0.5rem;
   font-weight: bold;
   color: #4CAF50;
+}
+
+.logo-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 24px;
+  height: 24px;
+}
+
+.team-logo {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.seed-container {
+  font-size: 0.875rem;
+  color: #999;
+  flex-shrink: 0;
+}
+
+.name-container {
+  flex: 1;
+  text-align: left;
+}
+
+.team.winner .name-container {
+  font-weight: bold;
+  color: #000
+}
+
+.team.winner .team-score {
+  font-weight: bold;
+  color: #000;
 }
 
