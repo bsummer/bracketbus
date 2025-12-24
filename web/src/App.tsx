@@ -65,6 +65,14 @@ function AppRoutes() {
         }
       />
       <Route
+        path="/brackets/:id/edit"
+        element={
+          <ProtectedRoute>
+            <CreateBracketPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
         path="/pools"
         element={
           <ProtectedRoute>

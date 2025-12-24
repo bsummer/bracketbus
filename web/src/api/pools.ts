@@ -33,6 +33,10 @@ export const poolsApi = {
     const response = await apiClient.get<Pool>(`/pools/${id}/public`);
     return response.data;
   },
+  getByCode: async (inviteCode: string): Promise<Pool> => {
+    const response = await apiClient.get<Pool>(`/pools/by-code/${encodeURIComponent(inviteCode)}`);
+    return response.data;
+  },
   getByName: async (name: string): Promise<Pool> => {
     const response = await apiClient.get<Pool>(`/pools/by-name/${encodeURIComponent(name)}`);
     return response.data;

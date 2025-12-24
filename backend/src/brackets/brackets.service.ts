@@ -19,6 +19,7 @@ import {
 } from '../common/entities';
 import { CreateBracketDto } from './dto/create-bracket.dto';
 import { UpdateBracketDto } from './dto/update-bracket.dto';
+import { BracketResponseDto } from './dto/bracket-response.dto';
 
 @Injectable()
 export class BracketsService {
@@ -225,7 +226,8 @@ export class BracketsService {
       throw new NotFoundException('Bracket not found');
     }
 
-    return bracket;
+    const isLocked = await this.checkBracketLocked(bracket);
+    return BracketResponseDto.fromEntity(bracket, isLocked);
   }
 
   async update(id: string, updateBracketDto: UpdateBracketDto, userId: string): Promise<Bracket> {
@@ -236,10 +238,31 @@ export class BracketsService {
     }
 
     if (await this.checkBracketLocked(bracket)) {
-      throw new ForbiddenException('Bracket is locked and cannot be updated');
+      throw new ForbiddenException('Backend: Bracket is locked and cannot be updated');
     }
 
     if (updateBracketDto.picks) {
+      // Validate that no picks are for games that have started or completed
+      const gameIds = updateBracketDto.picks.map((p) => p.gameId);
+      const games = await this.gamesRepository.find({
+        where: { id: In(gameIds) },
+      });
+
+      const now = new Date();
+      for (const game of games) {
+        // Check if game has started or completed
+        if (
+          game.status === GameStatus.IN_PROGRESS ||
+          game.status === GameStatus.COMPLETED ||
+          (game.gameDate && new Date(game.gameDate) <= now)
+        ) {
+          throw new ForbiddenException(
+            `Cannot edit picks for game ${game.gameNumber} (Round ${game.round}) - game has already started or completed`,
+          );
+        }
+      }
+
+      
       // Delete existing picks
       await this.picksRepository.delete({ bracketId: id });
 

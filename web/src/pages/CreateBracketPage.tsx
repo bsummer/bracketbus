@@ -1,23 +1,35 @@
 import { useState, useEffect, useMemo } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useNavigate, useSearchParams, useParams } from 'react-router-dom';
 import Header from '../components/common/Header';
 import { bracketsApi } from '../api/brackets';
 import { poolsApi } from '../api/pools';
 import type { Pool } from '../api/pools';
 import { gamesApi } from '../api/games';
 import type { Game } from '../api/games';
+import { useAuth } from '../context/AuthContext';
 import './CreateBracketPage.css';
 
 const CreateBracketPage = () => {
+  const { id: bracketId } = useParams<{ id?: string }>();
   const [searchParams] = useSearchParams();
+  const { user } = useAuth();
+  const isEditMode = !!bracketId;
+  
   const [name, setName] = useState('');
   const [poolId, setPoolId] = useState('');
   const [pools, setPools] = useState<Pool[]>([]);
   const [games, setGames] = useState<Game[]>([]);
   const [picks, setPicks] = useState<{ [gameId: string]: string }>({});
   const [loading, setLoading] = useState(false);
+  const [initialLoading, setInitialLoading] = useState(isEditMode);
   const navigate = useNavigate();
 
+  useEffect(() => {
+    if (isEditMode && bracketId) {
+      loadBracketForEdit(bracketId);
+    }
+  }, [bracketId, isEditMode]);
+  
   useEffect(() => {
     // Check for poolId in URL query parameters
     const urlPoolId = searchParams.get('poolId');
@@ -28,6 +40,54 @@ const CreateBracketPage = () => {
       loadData();
     }
   }, [searchParams]);
+
+  const loadBracketForEdit = async (id: string) => {
+    try {
+      const bracket = await bracketsApi.getOne(id);
+      
+      // Check if user owns this bracket
+      if (bracket.userId !== user?.id) {
+        alert('You can only edit your own brackets');
+        navigate('/brackets');
+        return;
+      }
+
+      // Check if bracket is locked
+      if (bracket.isLocked) {
+        alert('This bracket is locked and cannot be edited');
+        navigate(`/brackets/${id}`);
+        return;
+      }
+
+      setName(bracket.name);
+      setPoolId(bracket.poolId);
+
+      // Load pool and games
+      const pool = await poolsApi.getOne(bracket.poolId);
+      const allGames = await gamesApi.getAll();
+      const tournamentGames = allGames.filter(
+        (game) => game.tournamentId === pool.tournamentId
+      );
+
+      setPools([pool]);
+      setGames(tournamentGames.sort((a, b) => a.round - b.round || a.gameNumber - b.gameNumber));
+
+      // Load existing picks
+      const existingPicks: { [gameId: string]: string } = {};
+      if (bracket.picks) {
+        bracket.picks.forEach((pick: any) => {
+          existingPicks[pick.gameId] = pick.predictedWinnerId;
+        });
+      }
+      setPicks(existingPicks);
+    } catch (error) {
+      console.error('Failed to load bracket:', error);
+      alert('Failed to load bracket');
+      navigate('/brackets');
+    } finally {
+      setInitialLoading(false);
+    }
+  };
 
   const loadData = async () => {
     try {
@@ -209,12 +269,19 @@ const CreateBracketPage = () => {
 
     setLoading(true);
     try {
-      const bracket = await bracketsApi.create({
-        name,
-        poolId,
-        picks: picksArray,
-      });
-      navigate(`/brackets/${bracket.id}`);
+      if (isEditMode && bracketId) {
+        await bracketsApi.update(bracketId, {
+          picks: picksArray,
+        });
+        navigate(`/brackets/${bracketId}`);
+      } else {
+        const bracket = await bracketsApi.create({
+          name,
+          poolId,
+          picks: picksArray,
+        });
+        navigate(`/brackets/${bracket.id}`);
+      }
     } catch (error: any) {
       alert(error.response?.data?.message || 'Failed to create bracket');
     } finally {
@@ -227,7 +294,7 @@ const CreateBracketPage = () => {
     <div>
       <Header />
       <div className="page">
-        <h1>Create Bracket</h1>
+        <h1>{isEditMode ? 'Edit Bracket' : 'Create Bracket'}</h1>
         <form onSubmit={handleSubmit} className="bracket-form">
           <div className="form-section">
             <div className="form-group">
@@ -237,23 +304,26 @@ const CreateBracketPage = () => {
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 required
+                disabled={isEditMode} // Don't allow name changes when editing
               />
             </div>
-            <div className="form-group">
-              <label>Pool</label>
-              <select
-                value={poolId}
-                onChange={(e) => setPoolId(e.target.value)}
-                required
-              >
-                <option value="">Select a pool</option>
-                {pools.map((pool) => (
-                  <option key={pool.id} value={pool.id}>
-                    {pool.name}
-                  </option>
-                ))}
-              </select>
-            </div>
+            {!isEditMode && (
+              <div className="form-group">
+                <label>Pool</label>
+                <select
+                  value={poolId}
+                  onChange={(e) => setPoolId(e.target.value)}
+                  required
+                >
+                  <option value="">Select a pool</option>
+                  {pools.map((pool) => (
+                    <option key={pool.id} value={pool.id}>
+                      {pool.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )}
           </div>
 
           <div className="games-section">
@@ -264,18 +334,28 @@ const CreateBracketPage = () => {
                 <div className="games-grid">
                   {roundGames.map((game) => {
                     const { team1, team2 } = getAvailableTeams(game);
-                    // const team2 = getAvailableTeam(game.team2Id);
                     const selectedTeamId = picks[game.id];
+                    
+                    // Check if game has started or completed
+                    const now = new Date();
+                    const gameStarted = 
+                      game.status === 'in_progress' ||
+                      game.status === 'completed' ||
+                      (game.gameDate && new Date(game.gameDate) <= now);
+                    const isDisabled = gameStarted;
 
                     return (
                       <div key={game.id} className="game-card">
-                        <div className="game-header">Game {game.gameNumber}</div>
+                        <div className="game-header">
+                          Game {game.gameNumber}
+                          {isDisabled && <span className="locked-badge">🔒 Locked</span>}
+                        </div>
                         <div className="teams">
                           <button
                             type="button"
                             className={`team-btn ${selectedTeamId === team1?.id ? 'selected' : ''}`}
                             onClick={() => handlePick(game.id, team1?.id!)}
-                            disabled={!team1?.id}
+                            disabled={!team1?.id || isDisabled}
                           >
                             {team1 ? `${team1?.name} (#${team1?.seed})` : 'TBD'}
                           </button>
@@ -284,7 +364,7 @@ const CreateBracketPage = () => {
                             type="button"
                             className={`team-btn ${selectedTeamId === team2?.id ? 'selected' : ''}`}
                             onClick={() => handlePick(game.id, team2?.id!)}
-                            disabled={!team2?.id}
+                            disabled={!team2?.id || isDisabled}
                           >
                             {team2 ? `${team2?.name} (#${team2?.seed})` : 'TBD'}
                           </button>
@@ -298,7 +378,7 @@ const CreateBracketPage = () => {
           </div>
 
           <button type="submit" disabled={loading} className="btn btn-primary">
-            {loading ? 'Creating...' : 'Create Bracket'}
+            {loading ? (isEditMode ? 'Updating...' : 'Creating...') : (isEditMode ? 'Update Bracket' : 'Create Bracket')}
           </button>
         </form>
       </div>
@@ -307,4 +387,3 @@ const CreateBracketPage = () => {
 };
 
 export default CreateBracketPage;
-
