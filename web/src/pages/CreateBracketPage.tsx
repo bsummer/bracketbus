@@ -21,7 +21,6 @@ const CreateBracketPage = () => {
   const [games, setGames] = useState<Game[]>([]);
   const [picks, setPicks] = useState<{ [gameId: string]: string }>({});
   const [loading, setLoading] = useState(false);
-  const [setInitialLoading] = useState(isEditMode);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -84,9 +83,7 @@ const CreateBracketPage = () => {
       console.error('Failed to load bracket:', error);
       alert('Failed to load bracket');
       navigate('/brackets');
-    } finally {
-      setInitialLoading(false);
-    }
+    } 
   };
 
   const loadData = async () => {
