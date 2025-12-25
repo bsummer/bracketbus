@@ -170,9 +170,9 @@ export async function seedDatabase(dataSourceToUse?: DataSource) {
 
     // Create test users
     const testUsers = [
-      { username: 'admin', password: 'admin123' },
-      { username: 'user1', password: 'user123' },
-      { username: 'user2', password: 'user123' },
+      { username: 'admin', email: 'admin@example.com', password: 'admin123' },
+      { username: 'user1', email: 'user1@example.com', password: 'user123' },
+      { username: 'user2', email: 'user2@example.com', password: 'user123' },
     ];
 
     console.log('Creating test users...');
@@ -184,11 +184,19 @@ export async function seedDatabase(dataSourceToUse?: DataSource) {
       if (!existingUser) {
         const user = new entities.User();
         user.username = userData.username;
+        user.email = userData.email;
         user.passwordHash = await bcrypt.hash(userData.password, 10);
         await userRepository.save(user);
-        console.log(`Created user: ${userData.username}`);
+        console.log(`Created user: ${userData.username} (${userData.email})`);
       } else {
-        console.log(`User ${userData.username} already exists`);
+        // Update existing user with email if missing
+        if (!existingUser.email) {
+          existingUser.email = userData.email;
+          await userRepository.save(existingUser);
+          console.log(`Updated user ${userData.username} with email: ${userData.email}`);
+        } else {
+          console.log(`User ${userData.username} already exists`);
+        }
       }
     }
 

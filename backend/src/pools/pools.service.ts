@@ -80,6 +80,13 @@ export class PoolsService {
     });
   }
 
+  async findAllForAdmin(): Promise<Pool[]> {
+    return this.poolsRepository.find({
+      relations: ['tournament', 'creator'],
+      order: { created_at: 'DESC' },
+    });
+  }
+
   async findOne(id: string): Promise<Pool> {
     const pool = await this.poolsRepository.findOne({
       where: { id },

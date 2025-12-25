@@ -11,6 +11,8 @@ import PoolDetailPage from './pages/PoolDetailPage';
 import PublicPoolPage from './pages/PublicPoolPage';
 import GamesListPage from './pages/GamesListPage';
 import EditGamePage from './pages/EditGamePage';
+import AdminCreateUserPage from './pages/AdminCreateUserPage';
+import AdminAddUserToPoolPage from './pages/AdminAddUserToPoolPage';
 import './App.css';
 
 const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -113,11 +115,25 @@ function AppRoutes() {
         }
       />
       <Route
-        path="/:poolName"
+        path="/admin/users/new"
         element={
           <ProtectedRoute>
-            <PoolDetailPage />
+            <AdminCreateUserPage />
           </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/admin/users/add-to-pool"
+        element={
+          <ProtectedRoute>
+            <AdminAddUserToPoolPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/:poolName"
+        element={
+            <PublicPoolPage />
         }
       />
       <Route path="/" element={<Navigate to="/dashboard" replace />} />
