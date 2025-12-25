@@ -1,4 +1,22 @@
 import apiClient from './client';
+import type { Bracket } from './brackets';
+
+export interface Tournament {
+  id: string;
+  name: string;
+  startDate: string;
+}
+
+export interface PoolMember {
+  id: string;
+  userId: string;
+  poolId: string;
+  status: string;
+  user?: {
+    id: string;
+    username: string;
+  };
+}
 
 export interface Pool {
   id: string;
@@ -6,9 +24,9 @@ export interface Pool {
   tournamentId: string;
   creatorId: string;
   inviteCode: string;
-  tournament?: any;
-  members?: any[];
-  brackets?: any[];
+  tournament?: Tournament;
+  members?: PoolMember[];
+  brackets?: Bracket[];
 }
 
 export interface CreatePoolDto {

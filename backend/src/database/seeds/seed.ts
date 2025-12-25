@@ -19,16 +19,16 @@ interface TournamentData {
 
 async function generateGames(
   tournament: entities.Tournament,
-  teams: entities.Team[],
+  tournamentTeams: entities.TournamentTeam[],
   gameRepository: any,
 ) {
   const regions = ['East', 'West', 'Midwest', 'South'];
 
-  // Group teams by region
-  const teamsByRegion: { [key: string]: entities.Team[] } = {};
+  // Group tournament teams by region
+  const teamsByRegion: { [key: string]: entities.TournamentTeam[] } = {};
   regions.forEach((region) => {
-    teamsByRegion[region] = teams
-      .filter((t) => t.region === region)
+    teamsByRegion[region] = tournamentTeams
+      .filter((tt) => tt.region === region)
       .sort((a, b) => a.seed - b.seed);
   });
 
@@ -46,8 +46,8 @@ async function generateGames(
       game.round = 1;
       game.tournamentId = tournament.id;
       game.gameNumber = gameNumber++;
-      game.team1Id = team1.id;
-      game.team2Id = team2.id;
+      game.team1Id = team1.teamId;
+      game.team2Id = team2.teamId;
       game.status = entities.GameStatus.SCHEDULED;
       round1Games.push(game);
     }
@@ -147,6 +147,7 @@ export async function seedDatabase(dataSourceToUse?: DataSource) {
     const userRepository = source.getRepository(entities.User);
     const tournamentRepository = source.getRepository(entities.Tournament);
     const teamRepository = source.getRepository(entities.Team);
+    const tournamentTeamRepository = source.getRepository(entities.TournamentTeam);
     const gameRepository = source.getRepository(entities.Game);
 
     // Load tournament data
@@ -207,26 +208,52 @@ export async function seedDatabase(dataSourceToUse?: DataSource) {
       console.log(`Tournament ${tournament.name} already exists`);
     }
 
-    // Create teams
+    // Create teams (without seed/region)
     console.log('Creating teams...');
     const teams: entities.Team[] = [];
     for (const teamData of teamsData) {
       let team = await teamRepository.findOne({
-        where: { name: teamData.name, region: teamData.region },
+        where: { name: teamData.name },
       });
 
       if (!team) {
         team = new entities.Team();
         team.name = teamData.name;
-        team.seed = teamData.seed;
-        team.region = teamData.region;
         team.logoUrl = teamData.logoUrl;
         team = await teamRepository.save(team);
-        console.log(`Created team: ${team.name} (${team.region} #${team.seed})`);
+        console.log(`Created team: ${team.name}`);
       } else {
         console.log(`Team ${team.name} already exists`);
       }
       teams.push(team);
+    }
+
+    // Create tournament-team relationships
+    console.log('Creating tournament-team relationships...');
+    const tournamentTeams: entities.TournamentTeam[] = [];
+    for (let i = 0; i < teamsData.length; i++) {
+      const teamData = teamsData[i];
+      const team = teams[i];
+      
+      let tournamentTeam = await tournamentTeamRepository.findOne({
+        where: {
+          tournamentId: tournament.id,
+          teamId: team.id,
+        },
+      });
+
+      if (!tournamentTeam) {
+        tournamentTeam = new entities.TournamentTeam();
+        tournamentTeam.tournamentId = tournament.id;
+        tournamentTeam.teamId = team.id;
+        tournamentTeam.seed = teamData.seed;
+        tournamentTeam.region = teamData.region;
+        tournamentTeam = await tournamentTeamRepository.save(tournamentTeam);
+        console.log(`Created tournament-team: ${team.name} (${teamData.region} #${teamData.seed})`);
+      } else {
+        console.log(`Tournament-team relationship for ${team.name} already exists`);
+      }
+      tournamentTeams.push(tournamentTeam);
     }
 
     // Create games
@@ -236,7 +263,7 @@ export async function seedDatabase(dataSourceToUse?: DataSource) {
     });
 
     if (existingGames.length === 0) {
-      const gameCount = await generateGames(tournament, teams, gameRepository);
+      const gameCount = await generateGames(tournament, tournamentTeams, gameRepository);
       console.log(`Created ${gameCount} games`);
     } else {
       console.log(`Games already exist for tournament ${tournament.name}`);

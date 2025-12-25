@@ -1,4 +1,21 @@
 import apiClient from './client';
+import type { Team } from './teams';
+import type { Game } from './games';
+
+export interface BracketPick {
+  id: string;
+  gameId: string;
+  predictedWinnerId: string;
+  game?: Game;
+  predictedWinner?: Team;
+  pointsEarned?: number;
+}
+
+export interface BracketPool {
+  id: string;
+  name: string;
+  tournamentId: string;
+}
 
 export interface Bracket {
   id: string;
@@ -9,8 +26,12 @@ export interface Bracket {
   isLocked: boolean;
   created_at: Date;
   updated_at: Date;
-  pool?: any;
-  picks?: any[];
+  pool?: BracketPool;
+  picks?: BracketPick[];
+  user?: {
+    id: string;
+    username: string;
+  };
 }
 
 export interface Pick {

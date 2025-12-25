@@ -46,8 +46,11 @@ const PoolListPage = () => {
       setShowJoinModal(false);
       setInviteCode('');
       loadPools();
-    } catch (error: any) {
-      alert(error.response?.data?.message || 'Failed to join pool');
+    } catch (error) {
+      const errorMessage = error && typeof error === 'object' && 'response' in error
+        ? (error as { response?: { data?: { message?: string } } }).response?.data?.message
+        : undefined;
+      alert(errorMessage || 'Failed to join pool');
     }
   };
 

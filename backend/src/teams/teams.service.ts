@@ -12,7 +12,7 @@ export class TeamsService {
 
   async findAll(): Promise<Team[]> {
     return this.teamsRepository.find({
-      order: { region: 'ASC', seed: 'ASC' },
+      order: { name: 'ASC' },
     });
   }
 

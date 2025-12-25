@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import { useNavigate, useSearchParams, useParams } from 'react-router-dom';
 import Header from '../components/common/Header';
 import { bracketsApi } from '../api/brackets';
@@ -23,24 +23,7 @@ const CreateBracketPage = () => {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
-  useEffect(() => {
-    if (isEditMode && bracketId) {
-      loadBracketForEdit(bracketId);
-    }
-  }, [bracketId, isEditMode]);
-  
-  useEffect(() => {
-    // Check for poolId in URL query parameters
-    const urlPoolId = searchParams.get('poolId');
-    if (urlPoolId) {
-      setPoolId(urlPoolId);
-      loadPoolAndGames(urlPoolId);
-    } else {
-      loadData();
-    }
-  }, [searchParams]);
-
-  const loadBracketForEdit = async (id: string) => {
+  const loadBracketForEdit = useCallback(async (id: string) => {
     try {
       const bracket = await bracketsApi.getOne(id);
       
@@ -74,7 +57,7 @@ const CreateBracketPage = () => {
       // Load existing picks
       const existingPicks: { [gameId: string]: string } = {};
       if (bracket.picks) {
-        bracket.picks.forEach((pick: any) => {
+        bracket.picks.forEach((pick) => {
           existingPicks[pick.gameId] = pick.predictedWinnerId;
         });
       }
@@ -83,10 +66,10 @@ const CreateBracketPage = () => {
       console.error('Failed to load bracket:', error);
       alert('Failed to load bracket');
       navigate('/brackets');
-    } 
-  };
+    }
+  }, [user, navigate]);
 
-  const loadData = async () => {
+  const loadData = useCallback(async () => {
     try {
       const [poolsData, gamesData] = await Promise.all([
         poolsApi.getAll(),
@@ -97,9 +80,9 @@ const CreateBracketPage = () => {
     } catch (error) {
       console.error('Failed to load data:', error);
     }
-  };
+  }, []);
 
-  const loadPoolAndGames = async (poolIdParam: string) => {
+  const loadPoolAndGames = useCallback(async (poolIdParam: string) => {
     try {
       // Load pool to get tournamentId
       const pool = await poolsApi.getOne(poolIdParam);
@@ -123,7 +106,24 @@ const CreateBracketPage = () => {
       // Fallback to loading all data
       loadData();
     }
-  };
+  }, [loadData]);
+
+  useEffect(() => {
+    if (isEditMode && bracketId) {
+      loadBracketForEdit(bracketId);
+    }
+  }, [bracketId, isEditMode, loadBracketForEdit]);
+  
+  useEffect(() => {
+    // Check for poolId in URL query parameters
+    const urlPoolId = searchParams.get('poolId');
+    if (urlPoolId) {
+      setPoolId(urlPoolId);
+      loadPoolAndGames(urlPoolId);
+    } else {
+      loadData();
+    }
+  }, [searchParams, loadPoolAndGames, loadData]);
 
   
 
@@ -279,8 +279,11 @@ const CreateBracketPage = () => {
         });
         navigate(`/brackets/${bracket.id}`);
       }
-    } catch (error: any) {
-      alert(error.response?.data?.message || 'Failed to create bracket');
+    } catch (error) {
+      const errorMessage = error && typeof error === 'object' && 'response' in error
+        ? (error as { response?: { data?: { message?: string } } }).response?.data?.message
+        : undefined;
+      alert(errorMessage || `Failed to ${isEditMode ? 'update' : 'create'} bracket`);
     } finally {
       setLoading(false);
     }
@@ -352,7 +355,11 @@ const CreateBracketPage = () => {
                             <button
                               type="button"
                               className={`team-btn ${selectedTeamId === team1?.id ? 'selected' : ''}`}
-                              onClick={() => handlePick(game.id, team1?.id!)}
+                              onClick={() => {
+                                if (team1?.id) {
+                                  handlePick(game.id, team1.id);
+                                }
+                              }}
                               disabled={!team1?.id}
                             >
                               <span className="logo-container">
@@ -371,7 +378,11 @@ const CreateBracketPage = () => {
                             <button
                               type="button"
                               className={`team-btn ${selectedTeamId === team2?.id ? 'selected' : ''}`}
-                              onClick={() => handlePick(game.id, team2?.id!)}
+                              onClick={() => {
+                                if (team2?.id) {
+                                  handlePick(game.id, team2.id);
+                                }
+                              }}
                               disabled={!team2?.id}
                             >
                               <span className="logo-container">
