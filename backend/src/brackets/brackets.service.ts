@@ -16,6 +16,7 @@ import {
   Game,
   Tournament,
   GameStatus,
+  TournamentTeam,
 } from '../common/entities';
 import { CreateBracketDto } from './dto/create-bracket.dto';
 import { UpdateBracketDto } from './dto/update-bracket.dto';
@@ -36,7 +37,52 @@ export class BracketsService {
     private gamesRepository: Repository<Game>,
     @InjectRepository(Tournament)
     private tournamentsRepository: Repository<Tournament>,
+    @InjectRepository(TournamentTeam)
+    private tournamentTeamRepository: Repository<TournamentTeam>,
   ) {}
+
+  private async enrichBracketWithTeamData(bracket: Bracket): Promise<Bracket> {
+    const tournamentId = bracket.pool?.tournamentId || bracket.pool?.tournament?.id;
+    if (!tournamentId) return bracket;
+
+    // Load all tournament teams for this tournament in one query
+    const tournamentTeams = await this.tournamentTeamRepository.find({
+      where: { tournamentId },
+    });
+
+    // Create a map for quick lookup: teamId -> TournamentTeam
+    const teamMap = new Map<string, TournamentTeam>();
+    tournamentTeams.forEach((tt) => {
+      teamMap.set(tt.teamId, tt);
+    });
+
+    const enrichTeam = (team: any) => {
+      if (!team) return team;
+      const tournamentTeam = teamMap.get(team.id);
+      if (tournamentTeam) {
+        return {
+          ...team,
+          seed: tournamentTeam.seed,
+          region: tournamentTeam.region,
+        };
+      }
+      return team;
+    };
+
+    // Enrich teams in picks
+    if (bracket.picks) {
+      bracket.picks.forEach((pick) => {
+        if (pick.game) {
+          pick.game.team1 = enrichTeam(pick.game.team1);
+          pick.game.team2 = enrichTeam(pick.game.team2);
+          pick.game.winner = enrichTeam(pick.game.winner);
+        }
+        pick.predictedWinner = enrichTeam(pick.predictedWinner);
+      });
+    }
+
+    return bracket;
+  }
 
   private async checkBracketLocked(bracket: Bracket): Promise<boolean> {
     if (bracket.lockedAt) {
@@ -198,11 +244,15 @@ export class BracketsService {
   }
 
   async findAll(userId: string): Promise<Bracket[]> {
-    return this.bracketsRepository.find({
+    const brackets = await this.bracketsRepository.find({
       where: { userId },
       relations: ['pool', 'pool.tournament', 'picks', 'picks.game', 'picks.predictedWinner'],
       order: { created_at: 'DESC' },
     });
+
+    // Enrich brackets with tournament-specific team data
+    const enrichedBrackets = await Promise.all(brackets.map((bracket) => this.enrichBracketWithTeamData(bracket)));
+    return enrichedBrackets;
   }
 
   async findOne(id: string): Promise<Bracket> {
@@ -226,8 +276,10 @@ export class BracketsService {
       throw new NotFoundException('Bracket not found');
     }
 
-    const isLocked = await this.checkBracketLocked(bracket);
-    return BracketResponseDto.fromEntity(bracket, isLocked);
+    // Enrich bracket with tournament-specific team data
+    const enrichedBracket = await this.enrichBracketWithTeamData(bracket);
+    const isLocked = await this.checkBracketLocked(enrichedBracket);
+    return BracketResponseDto.fromEntity(enrichedBracket, isLocked);
   }
 
   async update(id: string, updateBracketDto: UpdateBracketDto, userId: string): Promise<Bracket> {

@@ -3,8 +3,8 @@ import apiClient from './client';
 export interface Team {
   id: string;
   name: string;
-  seed: number;
-  region: string;
+  seed?: number; // Optional - only present when team is in context of a tournament
+  region?: string; // Optional - only present when team is in context of a tournament
   logoUrl: string;
 }
 
