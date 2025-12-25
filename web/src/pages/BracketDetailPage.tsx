@@ -2,7 +2,9 @@ import { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import Header from '../components/common/Header';
 import { bracketsApi } from '../api/brackets';
-import type { Bracket } from '../api/brackets';
+import type { Bracket, BracketPick } from '../api/brackets';
+import type { Game } from '../api/games';
+import type { Team } from '../api/teams';
 import { useAuth } from '../context/AuthContext';
 import './BracketDetailPage.css';
 
@@ -11,12 +13,6 @@ const BracketDetailPage = () => {
   const { user } = useAuth();
   const [bracket, setBracket] = useState<Bracket | null>(null);
   const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    if (id) {
-      loadBracket();
-    }
-  }, [id]);
 
   const loadBracket = async () => {
     try {
@@ -28,6 +24,13 @@ const BracketDetailPage = () => {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    if (id) {
+      loadBracket();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [id]);
 
   if (loading) {
     return (
@@ -50,27 +53,29 @@ const BracketDetailPage = () => {
   const isLocked = bracket.isLocked;
   const isOwner = bracket.userId === user?.id;
   const canEdit = !isLocked && isOwner;
-  console.log('canEdit', canEdit);
-  console.log('isLocked', bracket.isLocked);
-  const picksByRound = (bracket.picks || []).reduce((acc: any, pick: any) => {
+  const picksByRound = (bracket.picks || []).reduce((acc: Record<number, BracketPick[]>, pick: BracketPick) => {
     const round = pick.game?.round || 0;
     if (!acc[round]) acc[round] = [];
     acc[round].push(pick);
     return acc;
   }, {});
 
-  const getTeamsForGame = (game: any, allPicks: any[]): { team1: any; team2: any } => {
+  const getTeamsForGame = (game: Game | undefined, allPicks: BracketPick[]): { team1: Team | null; team2: Team | null } => {
+    if (!game) {
+      return { team1: null, team2: null };
+    }
+
     // Round 1 games have teams populated
     if (game.round === 1) {
       return {
-        team1: game.team1,
-        team2: game.team2,
+        team1: game.team1 ?? null,
+        team2: game.team2 ?? null,
       };
     }
   
     // For Round 2+, get teams from parent game picks
-    let team1 = null;
-    let team2 = null;
+    let team1: Team | null = null;
+    let team2: Team | null = null;
   
     if (game.parentGame1Id) {
       const parent1Pick = allPicks.find((p) => p.gameId === game.parentGame1Id);
@@ -110,11 +115,11 @@ const BracketDetailPage = () => {
         </div>
 
         <div className="bracket-view">
-          {Object.entries(picksByRound).map(([round, picks]: [string, any]) => (
+          {Object.entries(picksByRound).map(([round, picks]) => (
             <div key={round} className="round-section">
               <h3>Round {round}</h3>
               <div className="picks-grid">
-                {picks.map((pick: any) => {
+                {picks.map((pick) => {
                   const game = pick.game;
                   const predicted = pick.predictedWinner;
                   const actual = game?.winner;
@@ -125,7 +130,7 @@ const BracketDetailPage = () => {
                     <div key={pick.id} className="pick-card">
                       <div className="game-info">Game {game?.gameNumber}</div>
                       <div className="pick-info">
-                        <div className={game.winnerId === team1?.id ? "team winner" : "team"}>
+                        <div className={game?.winnerId === team1?.id ? "team winner" : "team"}>
                           <span className="logo-container">
                             <img src={team1?.logoUrl} alt={team1?.name} className="team-logo" />
                           </span>
@@ -140,7 +145,7 @@ const BracketDetailPage = () => {
                           </span>
                         </div>
                         <div className="vs">vs</div>
-                        <div className={game.winnerId === team2?.id ? "team winner" : "team"}>
+                        <div className={game?.winnerId === team2?.id ? "team winner" : "team"}>
                           <span className="logo-container">
                             <img src={team2?.logoUrl} alt={team2?.name} className="team-logo" />
                           </span>
@@ -168,7 +173,7 @@ const BracketDetailPage = () => {
                           <strong>Winner:</strong> {actual.name}
                         </div>
                       )} */}
-                      {pick.pointsEarned > 0 && (
+                      {(pick.pointsEarned ?? 0) > 0 && (
                         <div className="points">+{pick.pointsEarned} points</div>
                       )}
                     </div>

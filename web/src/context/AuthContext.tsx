@@ -32,7 +32,10 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
           setLoading(false);
         });
     } else {
-      setLoading(false);
+      // Use setTimeout to avoid synchronous setState in effect
+      setTimeout(() => {
+        setLoading(false);
+      }, 0);
     }
   }, []);
 

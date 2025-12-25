@@ -29,7 +29,7 @@ const BracketListPage = () => {
     try {
       await bracketsApi.delete(id);
       loadBrackets();
-    } catch (error) {
+    } catch (_error) {
       alert('Failed to delete bracket');
     }
   };

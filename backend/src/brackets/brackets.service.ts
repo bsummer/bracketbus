@@ -101,7 +101,6 @@ export class BracketsService {
 
     const tournament = pool.tournament;
     const now = new Date();
-    const startDate = new Date(tournament.startDate);
 
     // Check if first game has started
     const firstGame = await this.gamesRepository.findOne({
@@ -213,7 +212,6 @@ export class BracketsService {
     }
 
     // Check if tournament has started
-    const tournament = pool.tournament;
     const tempBracket = { poolId: pool.id, lockedAt: null } as Bracket;
     if (await this.checkBracketLocked(tempBracket)) {
       throw new ForbiddenException('Tournament has already started');

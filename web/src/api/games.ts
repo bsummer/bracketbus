@@ -1,4 +1,5 @@
 import apiClient from './client';
+import type { Team } from './teams';
 
 export interface Game {
   id: string;
@@ -14,9 +15,9 @@ export interface Game {
   scoreTeam2: number | null;
   status: string;
   gameDate?: string | null;
-  team1?: any;
-  team2?: any;
-  winner?: any;
+  team1?: Team | null;
+  team2?: Team | null;
+  winner?: Team | null;
 }
 
 export interface UpdateGameDto {

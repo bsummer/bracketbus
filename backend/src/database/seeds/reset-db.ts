@@ -29,8 +29,6 @@ export async function reset() {
       } else {
         console.log('✅ No tables to drop');
       }
-    } catch (error) {
-      throw error;
     } finally {
       await queryRunner.release();
     }

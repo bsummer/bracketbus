@@ -53,7 +53,7 @@ export class DatabaseController {
       try {
         await AppDataSource.query('SELECT 1 FROM users LIMIT 1');
         schemaExists = true;
-      } catch (error: any) {
+      } catch (_error: any) {
         // Table doesn't exist, need to create schema
         schemaExists = false;
       }
