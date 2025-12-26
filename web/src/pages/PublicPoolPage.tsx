@@ -18,7 +18,6 @@ const PublicPoolPage = () => {
   const loadPool = async () => {
     try {
       const data = await poolsApi.getByName(poolName!);
-      console.log('data', data);
       setPool(data);
     } catch (error) {
       console.error('Failed to load pool:', error);
