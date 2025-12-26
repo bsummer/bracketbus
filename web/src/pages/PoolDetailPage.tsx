@@ -33,8 +33,6 @@ const PoolDetailPage = () => {
   const loadPool = async () => {
     try {
       let data: Pool;
-      console.log('poolName', poolName);
-      console.log('id', id);
       if (poolName) {
         data = await poolsApi.getByName(poolName!);
       } else {

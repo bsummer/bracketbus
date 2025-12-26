@@ -69,14 +69,29 @@ export class PoolsService {
   }
 
   async findAll(userId: string): Promise<Pool[]> {
+    // Use query builder to filter pools by user membership, but load all active members
+    const queryBuilder = this.poolsRepository.createQueryBuilder('pool')
+    .leftJoinAndSelect('pool.tournament', 'tournament')
+    .leftJoinAndSelect('pool.creator', 'creator')
+    .leftJoin('pool.members', 'userMember')
+    .leftJoinAndSelect('pool.members', 'allMembers')
+    .leftJoinAndSelect('allMembers.user', 'user')
+    .where('userMember.userId = :userId', { userId })
+    .andWhere('userMember.status = :status', { status: PoolMemberStatus.ACTIVE });
+
+    const pools = await queryBuilder.getMany();
+
+    // Filter members to only active ones for each pool
+    return pools.map((pool) => ({
+      ...pool,
+      members: pool.members?.filter((member) => member.status === PoolMemberStatus.ACTIVE) || [],
+    }));
+  }
+
+  async findAllForAdmin(): Promise<Pool[]> {
     return this.poolsRepository.find({
-      where: {
-        members: {
-          userId,
-          status: PoolMemberStatus.ACTIVE,
-        },
-      },
-      relations: ['tournament', 'creator', 'members', 'members.user'],
+      relations: ['tournament', 'creator'],
+      order: { created_at: 'DESC' },
     });
   }
 

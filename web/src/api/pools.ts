@@ -82,5 +82,9 @@ export const poolsApi = {
   removeMember: async (id: string, memberId: string) => {
     await apiClient.delete(`/pools/${id}/members/${memberId}`);
   },
+  getAllForAdmin: async (): Promise<Pool[]> => {
+    const response = await apiClient.get<Pool[]>('/pools/admin/all');
+    return response.data;
+  },
 };
 

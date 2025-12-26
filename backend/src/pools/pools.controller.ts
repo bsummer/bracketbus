@@ -30,6 +30,13 @@ export class PoolsController {
     return this.poolsService.findAll(req.user.userId);
   }
 
+  @Get('admin/all')
+  @UseGuards(JwtAuthGuard)
+  findAllForAdmin() {
+    // TODO: Add admin check
+    return this.poolsService.findAllForAdmin();
+  }
+
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.poolsService.findOnePublic(id);

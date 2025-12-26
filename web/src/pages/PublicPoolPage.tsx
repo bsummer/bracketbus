@@ -5,19 +5,19 @@ import type { Pool } from '../api/pools';
 import './PublicPoolPage.css';
 
 const PublicPoolPage = () => {
-  const { id } = useParams<{ id: string }>();
+  const { poolName } = useParams<{ poolName: string }>();
   const [pool, setPool] = useState<Pool | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (id) {
+    if (poolName) {
       loadPool();
     }
-  }, [id]);
+  }, [poolName]);
 
   const loadPool = async () => {
     try {
-      const data = await poolsApi.getOnePublic(id!);
+      const data = await poolsApi.getByName(poolName!);
       setPool(data);
     } catch (error) {
       console.error('Failed to load pool:', error);
@@ -53,23 +53,14 @@ const PublicPoolPage = () => {
                 <div key={bracket.id} className="leaderboard-item">
                   <span className="rank">#{index + 1}</span>
                   <span>{bracket.user?.username || 'Unknown'}</span>
-                  <span className="score">{bracket.name}</span>
+                  <span className="bracket-name">{bracket.name}</span>
+                  <span className="score">{bracket.totalPoints? bracket.totalPoints : 0}</span>
                 </div>
               ))}
             </div>
           )}
         </section>
 
-        <section className="section">
-          <h2>Members</h2>
-          <div className="member-list">
-            {pool.members?.map((member: any) => (
-              <div key={member.id} className="member-item">
-                {member.user?.username || 'Unknown'}
-              </div>
-            ))}
-          </div>
-        </section>
       </div>
     </div>
   );
