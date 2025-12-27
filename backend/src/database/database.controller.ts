@@ -51,8 +51,12 @@ export class DatabaseController {
       // Check if schema exists by trying to query a table
       let schemaExists = false;
       try {
-        await AppDataSource.query('SELECT 1 FROM users LIMIT 1');
-        schemaExists = true;
+        const result = await AppDataSource.query(`
+          SELECT COUNT(*) as count 
+          FROM pg_tables 
+          WHERE schemaname = 'public'
+        `);
+        schemaExists = parseInt(result[0].count, 10) > 0;
       } catch (_error: any) {
         // Table doesn't exist, need to create schema
         schemaExists = false;
