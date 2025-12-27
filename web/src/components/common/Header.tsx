@@ -64,18 +64,11 @@ const Header = () => {
                   Manage Games
                 </Link>
                 <Link 
-                  to="/admin/users/new" 
+                  to="/admin/users" 
                   className="dropdown-item"
                   onClick={() => setIsAdminDropdownOpen(false)}
                 >
-                  Create User
-                </Link>
-                <Link 
-                  to="/admin/users/add-to-pool" 
-                  className="dropdown-item"
-                  onClick={() => setIsAdminDropdownOpen(false)}
-                >
-                  Add User to Pool
+                  Users
                 </Link>
               </div>
             )}

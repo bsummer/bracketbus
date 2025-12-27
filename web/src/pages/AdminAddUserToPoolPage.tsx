@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import Header from '../components/common/Header';
 import { usersApi } from '../api/users';
 import type { User } from '../api/users';
@@ -9,6 +9,7 @@ import './AdminAddUserToPoolPage.css';
 
 const AdminAddUserToPoolPage: React.FC = () => {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const [userId, setUserId] = useState('');
   const [poolId, setPoolId] = useState('');
   const [users, setUsers] = useState<User[]>([]);
@@ -29,6 +30,12 @@ const AdminAddUserToPoolPage: React.FC = () => {
       ]);
       setUsers(usersData);
       setPools(poolsData);
+
+      // Check for userId in URL query parameters and set it if valid
+      const urlUserId = searchParams.get('userId');
+      if (urlUserId && usersData.some(user => user.id === urlUserId)) {
+        setUserId(urlUserId);
+      }
     } catch (err) {
       console.error('Failed to load data:', err);
       setError('Failed to load users or pools');

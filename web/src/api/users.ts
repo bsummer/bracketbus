@@ -13,9 +13,22 @@ export interface CreateUserDto {
   poolId?: string;
 }
 
+export interface UserForAdmin {
+  id: string;
+  username: string;
+  email: string;
+  poolCount: number;
+  bracketCount: number;
+  createdAt: string;
+}
+
 export const usersApi = {
   getAll: async (): Promise<User[]> => {
     const response = await apiClient.get<User[]>('/users');
+    return response.data;
+  },
+  getAllForAdmin: async (): Promise<UserForAdmin[]> => {
+    const response = await apiClient.get<UserForAdmin[]>('/users/admin');
     return response.data;
   },
   getOne: async (id: string): Promise<User> => {

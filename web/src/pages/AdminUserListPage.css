@@ -1,0 +1,109 @@
+.user-list {
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    padding: 1rem;
+    margin-bottom: 1rem;
+}
+
+.user-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.5rem;
+    border-bottom: 1px solid #ddd;
+    border-radius: 4px;
+    margin-bottom: 0.5rem;
+}
+
+.user-list-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.5rem;
+    border-bottom: 1px solid #ddd;
+    border-radius: 4px;
+    margin-bottom: 0.5rem;
+}
+
+.user-list-header span {
+    font-weight: bold;
+    padding: 0.5rem;
+    border-bottom: 1px solid #ddd;
+    border-radius: 4px;
+    margin-bottom: 0.5rem;
+}
+
+.page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.5rem;
+    padding: 0;
+}
+
+.page-header h1 {
+    margin: 0;
+}
+
+.page-header .actions {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.user-list-actions {
+    display: flex;
+    padding: 0.5rem;
+    border-bottom: 1px solid #ddd;
+    border-radius: 4px;
+    margin-bottom: 0.5rem;
+}
+
+.user-list-actions .btn {
+    background-color: #606060;
+    color: #ddd;
+}
+
+.user-list-actions .btn:hover {
+    background-color: gray;
+    color: black;
+}
+
+.user-name {
+    width: 10rem;
+    text-align: left;
+    padding-left: 0.5rem;
+    padding-right: 0.5rem;
+    border-right: 1px solid #ddd;
+}
+
+.user-email {
+    width: 15rem;
+    text-align: left;
+    padding-left: 0.5rem;
+    padding-right: 0.5rem;
+    border-right: 1px solid #ddd;
+}
+
+.user-pool-count {
+    width: 5rem;
+    text-align: center;
+    padding-left: 0.5rem;
+    padding-right: 0.5rem;
+    border-right: 1px solid #ddd;
+}
+
+.user-bracket-count {
+    width: 5rem;
+    text-align: center;
+    padding-left: 0.5rem;
+    padding-right: 0.5rem;
+    border-right: 1px solid #ddd;
+}
+
+.user-created-at {
+    width: 10rem;
+    text-align: center;
+    padding-left: 0.5rem;
+    padding-right: 0.5rem;
+    border-right: 1px solid #ddd;
+}

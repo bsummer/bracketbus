@@ -13,6 +13,7 @@ import GamesListPage from './pages/GamesListPage';
 import EditGamePage from './pages/EditGamePage';
 import AdminCreateUserPage from './pages/AdminCreateUserPage';
 import AdminAddUserToPoolPage from './pages/AdminAddUserToPoolPage';
+import AdminUserListPage from './pages/AdminUserListPage';
 import './App.css';
 
 const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -111,6 +112,14 @@ function AppRoutes() {
         element={
           <ProtectedRoute>
             <EditGamePage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/admin/users"
+        element={
+          <ProtectedRoute>
+            <AdminUserListPage />
           </ProtectedRoute>
         }
       />

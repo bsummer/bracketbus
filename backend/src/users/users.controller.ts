@@ -13,6 +13,11 @@ export class UsersController {
     return this.usersService.findAll();
   }
 
+  @Get('admin')
+  findAllWithStats() {
+    return this.usersService.findAllWithStats();
+  }
+
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.usersService.findOne(id);

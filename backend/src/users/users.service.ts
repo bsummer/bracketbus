@@ -2,8 +2,17 @@ import { Injectable, ConflictException, NotFoundException } from '@nestjs/common
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import * as bcrypt from 'bcrypt';
-import { User, Pool, PoolMember, PoolMemberStatus } from '../common/entities';
+import { User, Pool, PoolMember, PoolMemberStatus, Bracket } from '../common/entities';
 import { CreateUserDto } from './dto/create-user.dto';
+
+export interface UserWithStats {
+  id: string;
+  username: string;
+  email: string;
+  poolCount: number;
+  bracketCount: number;
+  createdAt: string;
+}
 
 @Injectable()
 export class UsersService {
@@ -32,6 +41,44 @@ export class UsersService {
     return this.usersRepository.find();
   }
 
+  async findAllWithStats(): Promise<UserWithStats[]> {
+    const result = await this.usersRepository
+      .createQueryBuilder('user')
+      .select('user.id', 'id')
+      .addSelect('user.username', 'username')
+      .addSelect('user.email', 'email')
+      .addSelect('user.created_at', 'createdAt')
+      .addSelect(
+        (subQuery) => {
+          return subQuery
+            .select('COALESCE(COUNT(poolMember.id), 0)')
+            .from(PoolMember, 'poolMember')
+            .where('poolMember.user_id = user.id')
+            .andWhere('poolMember.status = :activeStatus', { activeStatus: PoolMemberStatus.ACTIVE });
+        },
+        'poolCount'
+      )
+      .addSelect(
+        (subQuery) => {
+          return subQuery
+            .select('COALESCE(COUNT(bracket.id), 0)')
+            .from(Bracket, 'bracket')
+            .where('bracket.user_id = user.id');
+        },
+        'bracketCount'
+      )
+      .getRawMany();
+  
+    // Convert string counts to numbers
+    return result.map((row) => ({
+      id: row.id,
+      username: row.username,
+      email: row.email,
+      poolCount: parseInt(row.poolCount, 10),
+      bracketCount: parseInt(row.bracketCount, 10),
+    }));
+  }
+  
   async create(createUserDto: CreateUserDto): Promise<User> {
     // Check if username already exists
     const existingUserByUsername = await this.findByUsername(createUserDto.username);
