@@ -76,6 +76,7 @@ export class UsersService {
       email: row.email,
       poolCount: parseInt(row.poolCount, 10),
       bracketCount: parseInt(row.bracketCount, 10),
+      createdAt: row.createdAt,
     }));
   }
   
