@@ -1,6 +1,6 @@
 import { MigrationInterface, QueryRunner, TableColumn } from 'typeorm';
 
-export class AddEmailToUsers implements MigrationInterface {
+export class AddEmailToUsers1766828976674 implements MigrationInterface {
     public async up(queryRunner: QueryRunner): Promise<void> {
         // Check if the email column already exists
         const table = await queryRunner.getTable('users');
