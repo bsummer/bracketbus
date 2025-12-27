@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import Header from '../components/common/Header';
 import { usersApi } from '../api/users';
-import type { User, UserForAdmin } from '../api/users';
+import type { UserForAdmin } from '../api/users';
 import './AdminUserListPage.css';
 
 const AdminUserListPage: React.FC = () => {
