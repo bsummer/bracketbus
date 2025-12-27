@@ -49,10 +49,16 @@ const PublicPoolPage = () => {
             <p>No brackets yet</p>
           ) : (
             <div className="leaderboard">
+              <div className="leaderboard-header">
+                <span className="rank">Rank</span>
+                <span className="username">Username</span>
+                <span className="bracket-name">Bracket Name</span>
+                <span className="score">Score</span>
+              </div>
               {pool.brackets?.map((bracket: any, index: number) => (
                 <div key={bracket.id} className="leaderboard-item">
                   <span className="rank">#{index + 1}</span>
-                  <span>{bracket.user?.username || 'Unknown'}</span>
+                  <span className="username">{bracket.user?.username || 'Unknown'}</span>
                   <span className="bracket-name">{bracket.name}</span>
                   <span className="score">{bracket.totalPoints? bracket.totalPoints : 0}</span>
                 </div>
