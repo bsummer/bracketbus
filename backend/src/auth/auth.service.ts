@@ -5,6 +5,8 @@ import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
 import { User } from '../common/entities';
 import { LoginDto } from './dto/login.dto';
+import { UsersService } from '../users/users.service';
+import { CreateUserDto } from '../users/dto/create-user.dto';
 
 @Injectable()
 export class AuthService {
@@ -12,6 +14,7 @@ export class AuthService {
     @InjectRepository(User)
     private usersRepository: Repository<User>,
     private jwtService: JwtService,
+    private usersService: UsersService,
   ) {}
 
   async validateUser(username: string, password: string): Promise<any> {
@@ -44,6 +47,21 @@ export class AuthService {
 
   async validateUserById(userId: string): Promise<User | null> {
     return this.usersRepository.findOne({ where: { id: userId } });
+  }
+
+  async register(createUserDto: CreateUserDto) {
+    // This will throw ConflictException if username or email exists
+    const user = await this.usersService.create(createUserDto);
+    
+    // Return success without token (user needs to login)
+    return {
+      message: 'User created successfully',
+      user: {
+        id: user.id,
+        username: user.username,
+        email: user.email,
+      },
+    };
   }
 }
 
