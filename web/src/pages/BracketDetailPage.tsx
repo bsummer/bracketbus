@@ -13,6 +13,8 @@ const BracketDetailPage = () => {
   const { user } = useAuth();
   const [bracket, setBracket] = useState<Bracket | null>(null);
   const [loading, setLoading] = useState(true);
+  const [selectedRegion, setSelectedRegion] = useState<string | null>(null); // Add this state
+
 
   const loadBracket = async () => {
     try {
@@ -94,8 +96,6 @@ const BracketDetailPage = () => {
     return { team1, team2 };
   };
 
-
-
   const picksByRegionAndRound = (bracket.picks || []).reduce((acc: Record<string, Record<number, BracketPick[]>>, pick: BracketPick) => {
     const game = pick.game;
     const round = game?.round || 0;
@@ -127,8 +127,9 @@ const BracketDetailPage = () => {
     'center': 'center'
   };
 
+   // Get available regions (excluding 'center')
+   const availableRegions = Object.keys(picksByRegionAndRound);
 
-  
 
   return (
     <div>
@@ -149,15 +150,43 @@ const BracketDetailPage = () => {
           </div>
         </div>
 
-        <div className="bracket-container">
+        <div className="region-filters">
+          <span className="region-filter-label">Filter by region:</span>
+          {availableRegions.map((region, index) => (
+              
+            <span key={region}>
+              <button
+                className={`region-filter-link ${selectedRegion === region ? 'active' : ''}`}
+                onClick={() => setSelectedRegion(region)}
+              >
+                {region === 'center' ? 'Semis & Finals' : region}
+              </button>
+            </span>
+          ))}
+        </div>
+
+        <div className={`bracket-container ${selectedRegion ? 'single-region-view' : ''}`}>
           {/* Render each region */}
           {Object.entries(picksByRegionAndRound).map(([region, picksByRound]) => {
             const position = regionPositions[region] || 'center';
             const isCenter = region === 'center';
+
+            // Hide region if a specific region is selected and this isn't it
+            // Always show center region, or show it when no region is selected
+            const shouldShow = selectedRegion === null 
+              ? true 
+              : selectedRegion === region;
+            
+            if (!shouldShow) return null;
+            
             
             return (
               <div key={region} className={`bracket-region bracket-region-${position}`}>
-                {!isCenter && <h3 className="region-title">{region} Region</h3>}
+                {isCenter ? (
+                  <h3 className="region-title">Semis and Finals</h3>
+                ) : (
+                  <h3 className="region-title">{region} Region</h3>
+                )}
                 {Object.entries(picksByRound)
                   .sort(([a], [b]) => Number(a) - Number(b))
                   .map(([round, picks]) => (
