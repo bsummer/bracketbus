@@ -55,12 +55,6 @@ const BracketDetailPage = () => {
   const isLocked = bracket.isLocked;
   const isOwner = bracket.userId === user?.id;
   const canEdit = !isLocked && isOwner;
-  const picksByRound = (bracket.picks || []).reduce((acc: Record<number, BracketPick[]>, pick: BracketPick) => {
-    const round = pick.game?.round || 0;
-    if (!acc[round]) acc[round] = [];
-    acc[round].push(pick);
-    return acc;
-  }, {});
 
   const getTeamsForGame = (game: Game | undefined, allPicks: BracketPick[]): { team1: Team | null; team2: Team | null } => {
     if (!game) {
@@ -170,6 +164,7 @@ const BracketDetailPage = () => {
           {Object.entries(picksByRegionAndRound).map(([region, picksByRound]) => {
             const position = regionPositions[region] || 'center';
             const isCenter = region === 'center';
+            console.log(selectedRegion, "region", region);
 
             // Hide region if a specific region is selected and this isn't it
             // Always show center region, or show it when no region is selected
@@ -178,7 +173,7 @@ const BracketDetailPage = () => {
               : selectedRegion === region;
             
             if (!shouldShow) return null;
-            
+            console.log("shouldShow", shouldShow);
             
             return (
               <div key={region} className={`bracket-region bracket-region-${position}`}>
@@ -200,15 +195,15 @@ const BracketDetailPage = () => {
                         {picks.map((pick) => {
                           const game = pick.game;
                           const predicted = pick.predictedWinner;
-                          const actual = game?.winner;
-                          const isCorrect = actual && predicted?.id === actual.id;
+                          // const actual = game?.winner;
+                          // const isCorrect = actual && predicted?.id === actual.id;
                           const { team1, team2 } = getTeamsForGame(game, bracket.picks || []);
                           
                           return (
                             <div key={pick.id} className="game-card">
-                              <div className="game-info">Game {game?.gameNumber}</div>
                               <div className="pick-info">
-                                <div className={game?.winnerId === team1?.id ? "team winner" : "team"}>
+                                <div className={game?.winnerId === team1?.id ? "team winner" 
+                                  : predicted?.id === team1?.id ? "team predicted" : "team"}>
                                   <span className="logo-container">
                                     <img src={team1?.logoUrl} alt={team1?.name} className="team-logo" />
                                   </span>
@@ -219,11 +214,11 @@ const BracketDetailPage = () => {
                                     {team1 ? `${team1?.name}` : 'TBD'}
                                   </span>
                                   <span className="team-score">
-                                    {game?.scoreTeam1}
+                                    {game?.scoreTeam1 || 0}
                                   </span>
                                 </div>
-                                <div className="vs">vs</div>
-                                <div className={game?.winnerId === team2?.id ? "team winner" : "team"}>
+                                <div className={game?.winnerId === team2?.id ? "team winner" 
+                                  : predicted?.id === team2?.id ? "team predicted" : "team"}>
                                   <span className="logo-container">
                                     <img src={team2?.logoUrl} alt={team2?.name} className="team-logo" />
                                   </span>
@@ -234,18 +229,18 @@ const BracketDetailPage = () => {
                                     {team2 ? `${team2?.name}` : 'TBD'}
                                   </span>
                                   <span className="team-score">
-                                    {game?.scoreTeam2}
+                                    {game?.scoreTeam2 || 0}
                                   </span>
                                 </div>
                               </div>
-                              <div className="prediction">
+                              {/* <div className="prediction">
                                 <strong>Your Pick:</strong> {predicted?.name || 'None'}
                                 {actual && (
                                   <span className={isCorrect ? 'correct' : 'incorrect'}>
                                     {isCorrect ? ' ✓' : ' ✗'}
                                   </span>
                                 )}
-                              </div>
+                              </div> */}
                               {(pick.pointsEarned ?? 0) > 0 && (
                                 <div className="points">+{pick.pointsEarned} points</div>
                               )}

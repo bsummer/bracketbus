@@ -15,6 +15,8 @@
   font-weight: 500;
   color: #333;
   margin-right: 0.25rem;
+  display: inline-flex;
+  align-items: center;
 }
 
 .region-filter-separator {
@@ -164,6 +166,10 @@
   text-align: left;
 }
 
+.game-card .team.predicted {
+  border: 2px solid #4c87af;
+}
+
 .team.winner .name-container {
   font-weight: bold;
   color: #000
@@ -197,22 +203,18 @@
   grid-row: 1 / -1;
 }
 
-/* Hide center region when a specific region is selected */
-.bracket-container.single-region-view .bracket-region-center {
-  display: none;
-}
-
 /* Region positioning */
 .bracket-region {
   display: flex;
   flex-direction: row;
-  gap: 2rem;
+  gap: 3rem;
   padding: 1rem;
   background: white;
   border-radius: 8px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   align-items: flex-start;
   overflow-x: auto;
+  position: relative;
 }
 
 .bracket-region-top-right,
@@ -257,7 +259,12 @@
   font-weight: bold;
   margin-bottom: 1rem;
   text-align: center;
-  color: #222;
+  color: #999;
+  position: absolute;
+  top: 0.5rem;
+  left: calc(250px + 3rem);
+  z-index: 5;
+  pointer-events: none;
 }
 
 /* Each round is a column */
@@ -292,17 +299,17 @@
 }
 
 .round-2 .games-list {
-  margin-top: calc((var(--game-height, 120px) + 0.75rem) * 1.5 - 0.75rem);
-  gap: calc((var(--game-height, 120px) + 0.75rem) * 2 - 0.75rem);
+  margin-top: calc((var(--game-height, 120px) + 0.75rem) * .70 - 0.75rem);
+  gap: calc((var(--game-height, 120px) + 0.75rem) * 1.25 - 0.75rem);
 }
 
 .round-3 .games-list {
-  margin-top: calc((var(--game-height, 120px) + 0.75rem) * 3 - 0.75rem);
-  gap: calc((var(--game-height, 120px) + 0.75rem) * 4.5 - 0.75rem);
+  margin-top: calc((var(--game-height, 120px) + 0.75rem) * 1.85 - 0.75rem);
+  gap: calc((var(--game-height, 120px) + 0.75rem) * 3.5 - 0.75rem);
 }
 
 .round-4 .games-list {
-  margin-top: calc((var(--game-height, 120px) + 0.75rem) * 4.5 - 0.75rem);
+  margin-top: calc((var(--game-height, 120px) + 0.75rem) * 3.75 - 0.75rem);
   gap: calc((var(--game-height, 120px) + 0.75rem) * 6 - 0.75rem);
 }
 
@@ -336,7 +343,7 @@
   border: 1px solid #ddd;
   border-radius: 4px;
   padding: 0.75rem;
-  min-width: 200px;
+  min-width: 250px;
   background: white;
   /* --game-height: 360px; */
 }
@@ -404,6 +411,18 @@
   .bracket-region-bottom-right {
     grid-column: 1;
     grid-row: auto;
+  }
+
+  .bracket-region-top-right .region-title,
+  .bracket-region-bottom-right .region-title {
+    left: auto;
+    right: calc(220px + 3rem); /* Position from right side */
+  }
+
+  /* Center region should keep normal positioning */
+  .bracket-region-center .region-title {
+    position: static; /* Normal flow for center */
+    margin-bottom: 1rem; /* Restore margin for center */
   }
   
   .bracket-region-center {
