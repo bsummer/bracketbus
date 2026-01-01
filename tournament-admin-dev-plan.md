@@ -171,15 +171,15 @@ This plan outlines the development of admin-only pages for managing tournaments,
 ## Phase 2: Frontend API Integration
 
 ### Task 2.1: Create Tournaments API Client
-**Status:** ⏳ Pending
+**Status:** ✅ Completed
 
 **Frontend Changes:**
-- [ ] Create `web/src/api/tournaments.ts`
-- [ ] Define TypeScript interfaces:
+- [x] Create `web/src/api/tournaments.ts`
+- [x] Define TypeScript interfaces:
   - `Tournament` - id, name, startDate, createdAt, updatedAt
   - `CreateTournamentDto`
   - `UpdateTournamentDto`
-- [ ] Implement API methods:
+- [x] Implement API methods:
   - `getAll()` - Get all tournaments
   - `getOne(id)` - Get tournament by ID
   - `create(data)` - Create tournament
@@ -194,15 +194,15 @@ This plan outlines the development of admin-only pages for managing tournaments,
 ---
 
 ### Task 2.2: Create Tournament Teams API Client
-**Status:** ⏳ Pending
+**Status:** ✅ Completed
 
 **Frontend Changes:**
-- [ ] Create `web/src/api/tournament-teams.ts`
-- [ ] Define TypeScript interfaces:
+- [x] Create `web/src/api/tournament-teams.ts`
+- [x] Define TypeScript interfaces:
   - `TournamentTeam` - id, tournamentId, teamId, region, seed, team (relation)
   - `CreateTournamentTeamDto`
   - `UpdateTournamentTeamDto`
-- [ ] Implement API methods:
+- [x] Implement API methods:
   - `getAllByTournament(tournamentId)` - Get all teams for tournament
   - `getOne(id)` - Get tournament team by ID
   - `create(tournamentId, data)` - Add team to tournament
@@ -217,16 +217,16 @@ This plan outlines the development of admin-only pages for managing tournaments,
 ---
 
 ### Task 2.3: Enhance Games API Client
-**Status:** ⏳ Pending
+**Status:** ✅ Completed
 
 **Frontend Changes:**
-- [ ] Update `web/src/api/games.ts`
-- [ ] Add tournament-specific methods:
+- [x] Update `web/src/api/games.ts`
+- [x] Add tournament-specific methods:
   - `getAllByTournament(tournamentId, round?)` - Get games for tournament
   - `createForTournament(tournamentId, data)` - Create game
   - `updateForTournament(tournamentId, id, data)` - Update game
   - `removeFromTournament(tournamentId, id)` - Delete game
-- [ ] Add interfaces for tournament game creation/update
+- [x] Add interfaces for tournament game creation/update
 
 **Files to Modify:**
 - `web/src/api/games.ts`
