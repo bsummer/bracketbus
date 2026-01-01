@@ -238,22 +238,23 @@ This plan outlines the development of admin-only pages for managing tournaments,
 ## Phase 3: Frontend Pages - Tournaments List
 
 ### Task 3.1: Create Tournaments List Page
-**Status:** ⏳ Pending
+**Status:** ✅ Completed
 
 **Frontend Changes:**
-- [ ] Create `web/src/pages/AdminTournamentsPage.tsx`
-- [ ] Create `web/src/pages/AdminTournamentsPage.css`
-- [ ] Implement features:
+- [x] Create `web/src/pages/AdminTournamentsPage.tsx`
+- [x] Create `web/src/pages/AdminTournamentsPage.css`
+- [x] Implement features:
   - Display tournaments in table/card layout
   - Show tournament name, start date
   - "Create New Tournament" button at top
+  - Per tournament: "Edit" link → `/admin/tournaments/:id/edit`
   - Per tournament: "Teams" link → `/admin/tournaments/:id/teams`
   - Per tournament: "Games" link → `/admin/tournaments/:id/games`
   - Loading states
   - Error handling
   - Empty state when no tournaments
-- [ ] Add route in `App.tsx`: `/admin/tournaments`
-- [ ] Add admin check/redirect for non-admin users
+- [x] Add route in `App.tsx`: `/admin/tournaments`
+- [x] Add admin check/redirect for non-admin users (handled by ProtectedRoute)
 
 **Files to Create:**
 - `web/src/pages/AdminTournamentsPage.tsx`
@@ -267,25 +268,25 @@ This plan outlines the development of admin-only pages for managing tournaments,
 ---
 
 ### Task 3.2: Create Tournament Form (Create/Edit)
-**Status:** ⏳ Pending
+**Status:** ✅ Completed
 
 **Frontend Changes:**
-- [ ] Create `web/src/pages/AdminCreateTournamentPage.tsx`
-- [ ] Create `web/src/pages/AdminCreateTournamentPage.css`
-- [ ] Implement form:
+- [x] Create `web/src/pages/AdminCreateTournamentPage.tsx`
+- [x] Create `web/src/pages/AdminCreateTournamentPage.css`
+- [x] Implement form:
   - Tournament Name (text input, required)
   - Start Date (date picker, required)
   - Submit button
   - Cancel/Back button
-- [ ] Add validation:
+- [x] Add validation:
   - Name required, must be unique (check on submit)
   - Start date required, must be valid date
-- [ ] Handle errors:
+- [x] Handle errors:
   - Display validation errors inline
   - Show API error messages
-- [ ] On success: Redirect to tournaments list
-- [ ] Add route: `/admin/tournaments/new`
-- [ ] Optional: Add edit route `/admin/tournaments/:id/edit`
+- [x] On success: Redirect to tournaments list
+- [x] Add route: `/admin/tournaments/new`
+- [x] Add edit route `/admin/tournaments/:id/edit` (supports both create and edit modes)
 
 **Files to Create:**
 - `web/src/pages/AdminCreateTournamentPage.tsx`
