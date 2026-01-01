@@ -170,9 +170,9 @@ export async function seedDatabase(dataSourceToUse?: DataSource) {
 
     // Create test users
     const testUsers = [
-      { username: 'admin', email: 'admin@example.com', password: 'admin123' },
-      { username: 'user1', email: 'user1@example.com', password: 'user123' },
-      { username: 'user2', email: 'user2@example.com', password: 'user123' },
+      { username: 'admin', email: 'admin@example.com', password: 'admin123', role: entities.UserRole.ADMIN },
+      { username: 'user1', email: 'user1@example.com', password: 'user123', role: entities.UserRole.USER },
+      { username: 'user2', email: 'user2@example.com', password: 'user123', role: entities.UserRole.USER },
     ];
 
     console.log('Creating test users...');
@@ -186,14 +186,23 @@ export async function seedDatabase(dataSourceToUse?: DataSource) {
         user.username = userData.username;
         user.email = userData.email;
         user.passwordHash = await bcrypt.hash(userData.password, 10);
+        user.role = userData.role;
         await userRepository.save(user);
-        console.log(`Created user: ${userData.username} (${userData.email})`);
+        console.log(`Created user: ${userData.username} (${userData.email}) with role: ${userData.role}`);
       } else {
-        // Update existing user with email if missing
+        // Update existing user with email and role if missing
+        let updated = false;
         if (!existingUser.email) {
           existingUser.email = userData.email;
+          updated = true;
+        }
+        if (!existingUser.role) {
+          existingUser.role = userData.role;
+          updated = true;
+        }
+        if (updated) {
           await userRepository.save(existingUser);
-          console.log(`Updated user ${userData.username} with email: ${userData.email}`);
+          console.log(`Updated user ${userData.username} with email: ${userData.email}, role: ${userData.role}`);
         } else {
           console.log(`User ${userData.username} already exists`);
         }
