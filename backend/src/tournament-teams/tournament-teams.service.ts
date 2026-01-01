@@ -46,14 +46,17 @@ export class TournamentTeamsService {
     return tournamentTeam;
   }
 
-  async create(createTournamentTeamDto: CreateTournamentTeamDto): Promise<TournamentTeam> {
+  async create(
+    tournamentId: string,
+    createTournamentTeamDto: CreateTournamentTeamDto,
+  ): Promise<TournamentTeam> {
     // Verify tournament exists
     const tournament = await this.tournamentsRepository.findOne({
-      where: { id: createTournamentTeamDto.tournamentId },
+      where: { id: tournamentId },
     });
 
     if (!tournament) {
-      throw new NotFoundException(`Tournament with ID ${createTournamentTeamDto.tournamentId} not found`);
+      throw new NotFoundException(`Tournament with ID ${tournamentId} not found`);
     }
 
     // Verify team exists
@@ -68,7 +71,7 @@ export class TournamentTeamsService {
     // Check if team is already in tournament
     const existingTeam = await this.tournamentTeamsRepository.findOne({
       where: {
-        tournamentId: createTournamentTeamDto.tournamentId,
+        tournamentId,
         teamId: createTournamentTeamDto.teamId,
       },
     });
@@ -80,7 +83,7 @@ export class TournamentTeamsService {
     // Check if (region, seed) combination is already used
     const existingRegionSeed = await this.tournamentTeamsRepository.findOne({
       where: {
-        tournamentId: createTournamentTeamDto.tournamentId,
+        tournamentId,
         region: createTournamentTeamDto.region,
         seed: createTournamentTeamDto.seed,
       },
@@ -93,7 +96,7 @@ export class TournamentTeamsService {
     }
 
     const tournamentTeam = this.tournamentTeamsRepository.create({
-      tournamentId: createTournamentTeamDto.tournamentId,
+      tournamentId,
       teamId: createTournamentTeamDto.teamId,
       region: createTournamentTeamDto.region,
       seed: createTournamentTeamDto.seed,

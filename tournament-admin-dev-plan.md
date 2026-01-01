@@ -302,20 +302,21 @@ This plan outlines the development of admin-only pages for managing tournaments,
 ## Phase 4: Frontend Pages - Tournament Teams
 
 ### Task 4.1: Create Tournament Teams List Page
-**Status:** ⏳ Pending
+**Status:** ✅ Completed
 
 **Frontend Changes:**
-- [ ] Create `web/src/pages/AdminTournamentTeamsPage.tsx`
-- [ ] Create `web/src/pages/AdminTournamentTeamsPage.css`
-- [ ] Implement features:
+- [x] Create `web/src/pages/AdminTournamentTeamsPage.tsx`
+- [x] Create `web/src/pages/AdminTournamentTeamsPage.css`
+- [x] Implement features:
   - Display tournament name at top
   - Table showing all teams in tournament
   - Columns: Team Name, Region, Seed, Actions (Edit, Delete)
   - "Add Team" button
   - Loading states
   - Error handling
-- [ ] Add route: `/admin/tournaments/:tournamentId/teams`
-- [ ] Fetch teams using tournament ID from URL params
+  - Empty state when no teams
+- [x] Add route: `/admin/tournaments/:tournamentId/teams`
+- [x] Fetch teams using tournament ID from URL params
 
 **Files to Create:**
 - `web/src/pages/AdminTournamentTeamsPage.tsx`
@@ -329,24 +330,25 @@ This plan outlines the development of admin-only pages for managing tournaments,
 ---
 
 ### Task 4.2: Create Tournament Team Form (Add/Edit)
-**Status:** ⏳ Pending
+**Status:** ✅ Completed
 
 **Frontend Changes:**
-- [ ] Create add/edit form (modal or inline)
-- [ ] Form fields:
+- [x] Create add/edit form (modal)
+- [x] Form fields:
   - Team dropdown: All teams from teams table (exclude teams already in tournament)
   - Region dropdown: 'East', 'West', 'South', 'Midwest' (required)
   - Seed dropdown: 1-16 (required)
-- [ ] Add validation:
+- [x] Add validation:
   - Frontend: All fields required, seed 1-16, team not already in tournament
   - Display validation errors inline
-- [ ] Handle API errors:
+- [x] Handle API errors:
   - "This team is already in the tournament"
   - "This seed/region combination is already assigned"
-- [ ] On success: Refresh teams list, show success message
-- [ ] Delete functionality:
+- [x] On success: Refresh teams list, close modal
+- [x] Delete functionality:
   - Delete button with confirmation dialog
   - On confirm: Delete and refresh list
+- [x] Edit mode: Team field disabled (cannot change team when editing)
 
 **Files to Modify:**
 - `web/src/pages/AdminTournamentTeamsPage.tsx`

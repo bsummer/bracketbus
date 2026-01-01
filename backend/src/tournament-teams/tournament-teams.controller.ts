@@ -20,11 +20,7 @@ export class TournamentTeamsController {
     @Param('tournamentId') tournamentId: string,
     @Body() createTournamentTeamDto: CreateTournamentTeamDto,
   ) {
-    // Ensure tournamentId from URL matches the DTO
-    return this.tournamentTeamsService.create({
-      ...createTournamentTeamDto,
-      tournamentId,
-    });
+    return this.tournamentTeamsService.create(tournamentId, createTournamentTeamDto);
   }
 
   @Put(':id')
