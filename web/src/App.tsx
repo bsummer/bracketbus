@@ -17,7 +17,7 @@ import AdminUserListPage from './pages/AdminUserListPage';
 import './App.css';
 
 const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const { isAuthenticated, loading } = useAuth();
+  const { isAuthenticated, loading, isAdmin } = useAuth();
 
   if (loading) {
     return <div>Loading...</div>;
@@ -25,6 +25,10 @@ const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) =
 
   if (!isAuthenticated) {
     return <Navigate to="/login" replace />;
+  }
+
+  if (!isAdmin && window.location.pathname.startsWith('/admin')) {
+    return <Navigate to="/dashboard" replace />;
   }
 
   return <>{children}</>;

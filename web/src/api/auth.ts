@@ -10,7 +10,14 @@ export interface AuthResponse {
   user: {
     id: string;
     username: string;
+    role: string;
   };
+}
+
+export interface User {
+  id: string;
+  username: string;
+  role: string;
 }
 
 export const authApi = {

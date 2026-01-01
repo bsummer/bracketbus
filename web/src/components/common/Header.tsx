@@ -4,7 +4,7 @@ import { useAuth } from '../../context/AuthContext';
 import './Header.css';
 
 const Header = () => {
-  const { user, logout, isAuthenticated } = useAuth();
+  const { user, logout, isAuthenticated, isAdmin } = useAuth();
   const [isUserDropdownOpen, setIsUserDropdownOpen] = useState(false);
   const [isAdminDropdownOpen, setIsAdminDropdownOpen] = useState(false);
   const userDropdownRef = useRef<HTMLDivElement>(null);
@@ -47,32 +47,34 @@ const Header = () => {
           <Link to="/dashboard">Dashboard</Link>
           <Link to="/brackets">Brackets</Link>
           <Link to="/pools">Pools</Link>
-          <div className="admin-section" ref={adminDropdownRef}>
-            <span 
-              className="admin-trigger"
-              onClick={() => setIsAdminDropdownOpen(!isAdminDropdownOpen)}
-            >
-              Admin
-            </span>
-            {isAdminDropdownOpen && (
-              <div className="dropdown-menu">
-                <Link 
-                  to="/admin/games" 
-                  className="dropdown-item"
-                  onClick={() => setIsAdminDropdownOpen(false)}
-                >
-                  Manage Games
-                </Link>
-                <Link 
-                  to="/admin/users" 
-                  className="dropdown-item"
-                  onClick={() => setIsAdminDropdownOpen(false)}
-                >
-                  Users
-                </Link>
-              </div>
-            )}
-          </div>
+          {isAdmin && (
+            <div className="admin-section" ref={adminDropdownRef}>
+              <span 
+                className="admin-trigger"
+                onClick={() => setIsAdminDropdownOpen(!isAdminDropdownOpen)}
+              >
+                Admin
+              </span>
+              {isAdminDropdownOpen && (
+                <div className="dropdown-menu">
+                  <Link 
+                    to="/admin/games" 
+                    className="dropdown-item"
+                    onClick={() => setIsAdminDropdownOpen(false)}
+                  >
+                    Manage Games
+                  </Link>
+                  <Link 
+                    to="/admin/users" 
+                    className="dropdown-item"
+                    onClick={() => setIsAdminDropdownOpen(false)}
+                  >
+                    Users
+                  </Link>
+                </div>
+              )}
+            </div>
+          )}
         </nav>
         <div className="user-section" ref={userDropdownRef}>
           <span 
