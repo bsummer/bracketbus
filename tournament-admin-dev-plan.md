@@ -129,30 +129,30 @@ This plan outlines the development of admin-only pages for managing tournaments,
 ---
 
 ### Task 1.4: Enhance Games Module for Tournament Management
-**Status:** ⏳ Pending
+**Status:** ✅ Completed
 
 **Backend Changes:**
-- [ ] Extend games controller with tournament-specific endpoints:
+- [x] Extend games controller with tournament-specific endpoints:
   - `GET /api/tournaments/:tournamentId/games` - Get all games for tournament
   - `GET /api/tournaments/:tournamentId/games?round=X` - Get games by round
   - `POST /api/tournaments/:tournamentId/games` - Create game (admin only)
   - `PUT /api/tournaments/:tournamentId/games/:id` - Update game (admin only)
   - `DELETE /api/tournaments/:tournamentId/games/:id` - Delete game (admin only)
-- [ ] Create DTOs:
+- [x] Create DTOs:
   - `CreateTournamentGameDto` - handles Round 1 vs Round 2+ logic
   - `UpdateTournamentGameDto` - update game details
-- [ ] Enhance games service:
+- [x] Enhance games service:
   - `findAllByTournament(tournamentId, round?)` - Filter by tournament/round
   - `createForTournament(tournamentId, dto)` - Create with validation
   - `updateForTournament(id, dto)` - Update with validation
-- [ ] Add validation logic:
+- [x] Add validation logic:
   - Round 1: region required, team1Id/team2Id required, teams must exist in tournament with matching region
   - Round 2+: parentGame1Id/parentGame2Id required, parent games must be from previous round
-  - Round 2: Allow region + seed OR parent games (but not both)
+  - Round 2: Allow region + seed OR parent games (but not both) - Note: region+seed implementation deferred (requires parent game winners)
   - Game number unique per (tournament, round)
   - Team can only appear in one game per round
   - Validate parent games are from (currentRound - 1)
-- [ ] Handle business rule: Team (by seed+region or parent game) can only appear once per round
+- [x] Handle business rule: Team (by seed+region or parent game) can only appear once per round
 
 **Files to Modify:**
 - `backend/src/games/games.controller.ts`

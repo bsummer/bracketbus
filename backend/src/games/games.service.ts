@@ -1,8 +1,11 @@
-import { Injectable, ForbiddenException } from '@nestjs/common';
+import { Injectable, ForbiddenException, NotFoundException, ConflictException, BadRequestException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, In } from 'typeorm';
-import { Game, TournamentTeam } from '../common/entities';
+import { Game, TournamentTeam, Tournament, Team } from '../common/entities';
 import { ScoresService } from '../scores/scores.service';
+import { CreateTournamentGameDto } from './dto/create-tournament-game.dto';
+import { UpdateTournamentGameDto } from './dto/update-tournament-game.dto';
+import { GameStatus } from '../common/entities/game.entity';
 
 @Injectable()
 export class GamesService {
@@ -11,6 +14,10 @@ export class GamesService {
     private gamesRepository: Repository<Game>,
     @InjectRepository(TournamentTeam)
     private tournamentTeamRepository: Repository<TournamentTeam>,
+    @InjectRepository(Tournament)
+    private tournamentsRepository: Repository<Tournament>,
+    @InjectRepository(Team)
+    private teamsRepository: Repository<Team>,
     private scoresService: ScoresService,
   ) {}
 
@@ -114,6 +121,364 @@ export class GamesService {
     // Reload with relations and enrich
     const reloadedGame = await this.findOne(id);
     return reloadedGame || updatedGame;
+  }
+
+  async findAllByTournament(tournamentId: string, round?: number): Promise<Game[]> {
+    // Verify tournament exists
+    const tournament = await this.tournamentsRepository.findOne({
+      where: { id: tournamentId },
+    });
+
+    if (!tournament) {
+      throw new NotFoundException(`Tournament with ID ${tournamentId} not found`);
+    }
+
+    const where: any = { tournamentId };
+    if (round !== undefined) {
+      where.round = round;
+    }
+
+    const games = await this.gamesRepository.find({
+      where,
+      relations: ['team1', 'team2', 'winner', 'tournament', 'parentGame1', 'parentGame2'],
+      order: { round: 'ASC', gameNumber: 'ASC' },
+    });
+
+    return this.enrichGamesWithTeamData(games);
+  }
+
+  async createForTournament(tournamentId: string, createDto: CreateTournamentGameDto): Promise<Game> {
+    // Verify tournament exists
+    const tournament = await this.tournamentsRepository.findOne({
+      where: { id: tournamentId },
+    });
+
+    if (!tournament) {
+      throw new NotFoundException(`Tournament with ID ${tournamentId} not found`);
+    }
+
+    // Check if game number already exists for this tournament and round
+    const existingGame = await this.gamesRepository.findOne({
+      where: {
+        tournamentId,
+        round: createDto.round,
+        gameNumber: createDto.gameNumber,
+      },
+    });
+
+    if (existingGame) {
+      throw new ConflictException(
+        `Game number ${createDto.gameNumber} already exists for round ${createDto.round} in this tournament`,
+      );
+    }
+
+    // Validation based on round
+    if (createDto.round === 1) {
+      // Round 1: region required, team1Id/team2Id required
+      if (!createDto.region) {
+        throw new BadRequestException('Region is required for Round 1 games');
+      }
+      if (!createDto.team1Id || !createDto.team2Id) {
+        throw new BadRequestException('Team 1 and Team 2 are required for Round 1 games');
+      }
+      if (createDto.team1Id === createDto.team2Id) {
+        throw new BadRequestException('Team 1 and Team 2 must be different');
+      }
+
+      // Verify teams exist in tournament with matching region
+      const team1TournamentTeam = await this.tournamentTeamRepository.findOne({
+        where: {
+          tournamentId,
+          teamId: createDto.team1Id,
+          region: createDto.region,
+        },
+      });
+
+      if (!team1TournamentTeam) {
+        throw new BadRequestException(
+          `Team 1 does not exist in tournament with region ${createDto.region}`,
+        );
+      }
+
+      const team2TournamentTeam = await this.tournamentTeamRepository.findOne({
+        where: {
+          tournamentId,
+          teamId: createDto.team2Id,
+          region: createDto.region,
+        },
+      });
+
+      if (!team2TournamentTeam) {
+        throw new BadRequestException(
+          `Team 2 does not exist in tournament with region ${createDto.region}`,
+        );
+      }
+
+      // Check if teams already appear in another game in this round
+      await this.validateTeamNotInOtherGame(tournamentId, createDto.round, createDto.team1Id, createDto.team2Id);
+
+      const game = this.gamesRepository.create({
+        tournamentId,
+        round: createDto.round,
+        gameNumber: createDto.gameNumber,
+        region: createDto.region,
+        team1Id: createDto.team1Id,
+        team2Id: createDto.team2Id,
+        gameDate: createDto.gameDate ? new Date(createDto.gameDate) : null,
+        status: createDto.status || GameStatus.SCHEDULED,
+      });
+
+      return this.gamesRepository.save(game);
+    } else {
+      // Round 2+: parentGame1Id/parentGame2Id required (or region+seed for Round 2)
+      if (createDto.round === 2) {
+        // Round 2: can use region + seed OR parent games (but not both)
+        const hasParentGames = createDto.parentGame1Id && createDto.parentGame2Id;
+        const hasRegionSeed = createDto.region && createDto.seed;
+
+        if (!hasParentGames && !hasRegionSeed) {
+          throw new BadRequestException(
+            'Round 2 games require either parent games or region + seed',
+          );
+        }
+
+        if (hasParentGames && hasRegionSeed) {
+          throw new BadRequestException(
+            'Round 2 games cannot have both parent games and region+seed',
+          );
+        }
+
+        if (hasRegionSeed) {
+          // Use region + seed approach (similar to Round 1 but with seed instead of team IDs)
+          // This is a special case - we'd need to find teams by region and seed
+          // For now, we'll require parent games for Round 2+
+          throw new BadRequestException(
+            'Round 2 games with region+seed are not yet fully supported. Please use parent games.',
+          );
+        }
+      }
+
+      // For Round 2+ (or Round 2 with parent games)
+      if (!createDto.parentGame1Id || !createDto.parentGame2Id) {
+        throw new BadRequestException('Parent games are required for Round 2+ games');
+      }
+
+      if (createDto.parentGame1Id === createDto.parentGame2Id) {
+        throw new BadRequestException('Parent Game 1 and Parent Game 2 must be different');
+      }
+
+      // Verify parent games exist and are from previous round
+      const parentGame1 = await this.gamesRepository.findOne({
+        where: { id: createDto.parentGame1Id },
+      });
+
+      if (!parentGame1) {
+        throw new NotFoundException(`Parent Game 1 with ID ${createDto.parentGame1Id} not found`);
+      }
+
+      if (parentGame1.tournamentId !== tournamentId) {
+        throw new BadRequestException('Parent Game 1 must be from the same tournament');
+      }
+
+      if (parentGame1.round !== createDto.round - 1) {
+        throw new BadRequestException(
+          `Parent Game 1 must be from round ${createDto.round - 1}, but it is from round ${parentGame1.round}`,
+        );
+      }
+
+      const parentGame2 = await this.gamesRepository.findOne({
+        where: { id: createDto.parentGame2Id },
+      });
+
+      if (!parentGame2) {
+        throw new NotFoundException(`Parent Game 2 with ID ${createDto.parentGame2Id} not found`);
+      }
+
+      if (parentGame2.tournamentId !== tournamentId) {
+        throw new BadRequestException('Parent Game 2 must be from the same tournament');
+      }
+
+      if (parentGame2.round !== createDto.round - 1) {
+        throw new BadRequestException(
+          `Parent Game 2 must be from round ${createDto.round - 1}, but it is from round ${parentGame2.round}`,
+        );
+      }
+
+      // Check if parent games are already used in another game in this round
+      const existingGameWithParent1 = await this.gamesRepository.findOne({
+        where: [
+          { tournamentId, round: createDto.round, parentGame1Id: createDto.parentGame1Id },
+          { tournamentId, round: createDto.round, parentGame2Id: createDto.parentGame1Id },
+        ],
+      });
+
+      if (existingGameWithParent1) {
+        throw new ConflictException(
+          `Parent Game 1 is already used in game ${existingGameWithParent1.gameNumber} of round ${createDto.round}`,
+        );
+      }
+
+      const existingGameWithParent2 = await this.gamesRepository.findOne({
+        where: [
+          { tournamentId, round: createDto.round, parentGame1Id: createDto.parentGame2Id },
+          { tournamentId, round: createDto.round, parentGame2Id: createDto.parentGame2Id },
+        ],
+      });
+
+      if (existingGameWithParent2) {
+        throw new ConflictException(
+          `Parent Game 2 is already used in game ${existingGameWithParent2.gameNumber} of round ${createDto.round}`,
+        );
+      }
+
+      const game = this.gamesRepository.create({
+        tournamentId,
+        round: createDto.round,
+        gameNumber: createDto.gameNumber,
+        region: createDto.region || null,
+        parentGame1Id: createDto.parentGame1Id,
+        parentGame2Id: createDto.parentGame2Id,
+        gameDate: createDto.gameDate ? new Date(createDto.gameDate) : null,
+        status: createDto.status || GameStatus.SCHEDULED,
+      });
+
+      return this.gamesRepository.save(game);
+    }
+  }
+
+  private async validateTeamNotInOtherGame(
+    tournamentId: string,
+    round: number,
+    team1Id: string,
+    team2Id: string,
+  ): Promise<void> {
+    // Check if team1 already appears in another game in this round
+    const existingGameWithTeam1 = await this.gamesRepository.findOne({
+      where: [
+        { tournamentId, round, team1Id },
+        { tournamentId, round, team2Id: team1Id },
+      ],
+    });
+
+    if (existingGameWithTeam1) {
+      throw new ConflictException(
+        `Team is already playing in game ${existingGameWithTeam1.gameNumber} of round ${round}`,
+      );
+    }
+
+    // Check if team2 already appears in another game in this round
+    const existingGameWithTeam2 = await this.gamesRepository.findOne({
+      where: [
+        { tournamentId, round, team1Id: team2Id },
+        { tournamentId, round, team2Id },
+      ],
+    });
+
+    if (existingGameWithTeam2) {
+      throw new ConflictException(
+        `Team is already playing in game ${existingGameWithTeam2.gameNumber} of round ${round}`,
+      );
+    }
+  }
+
+  async updateForTournament(
+    tournamentId: string,
+    id: string,
+    updateDto: UpdateTournamentGameDto,
+  ): Promise<Game> {
+    const game = await this.gamesRepository.findOne({
+      where: { id },
+      relations: ['team1', 'team2', 'tournament'],
+    });
+
+    if (!game) {
+      throw new NotFoundException(`Game with ID ${id} not found`);
+    }
+
+    if (game.tournamentId !== tournamentId) {
+      throw new BadRequestException('Game does not belong to the specified tournament');
+    }
+
+    // If updating game number, check for conflicts
+    if (updateDto.gameNumber !== undefined && updateDto.gameNumber !== game.gameNumber) {
+      const existingGame = await this.gamesRepository.findOne({
+        where: {
+          tournamentId,
+          round: game.round,
+          gameNumber: updateDto.gameNumber,
+        },
+      });
+
+      if (existingGame && existingGame.id !== id) {
+        throw new ConflictException(
+          `Game number ${updateDto.gameNumber} already exists for round ${game.round} in this tournament`,
+        );
+      }
+    }
+
+    // Update fields
+    if (updateDto.gameNumber !== undefined) {
+      game.gameNumber = updateDto.gameNumber;
+    }
+    if (updateDto.region !== undefined) {
+      game.region = updateDto.region;
+    }
+    if (updateDto.team1Id !== undefined) {
+      game.team1Id = updateDto.team1Id;
+    }
+    if (updateDto.team2Id !== undefined) {
+      game.team2Id = updateDto.team2Id;
+    }
+    if (updateDto.parentGame1Id !== undefined) {
+      game.parentGame1Id = updateDto.parentGame1Id;
+    }
+    if (updateDto.parentGame2Id !== undefined) {
+      game.parentGame2Id = updateDto.parentGame2Id;
+    }
+    if (updateDto.status !== undefined) {
+      game.status = updateDto.status;
+    }
+    if (updateDto.gameDate !== undefined) {
+      game.gameDate = updateDto.gameDate ? new Date(updateDto.gameDate) : null;
+    }
+    if (updateDto.scoreTeam1 !== undefined) {
+      game.scoreTeam1 = updateDto.scoreTeam1;
+    }
+    if (updateDto.scoreTeam2 !== undefined) {
+      game.scoreTeam2 = updateDto.scoreTeam2;
+    }
+
+    const previousWinnerId = game.winnerId;
+    if (updateDto.winnerId !== undefined) {
+      game.winnerId = updateDto.winnerId;
+    }
+
+    const updatedGame = await this.gamesRepository.save(game);
+
+    // If winner was updated, recalculate scores
+    if (updateDto.winnerId && updateDto.winnerId !== previousWinnerId) {
+      await this.scoresService.calculateScoresForGame(id);
+    }
+
+    // Reload with relations and enrich
+    const reloadedGame = await this.findOne(id);
+    return reloadedGame || updatedGame;
+  }
+
+  async removeFromTournament(tournamentId: string, id: string): Promise<void> {
+    const game = await this.gamesRepository.findOne({
+      where: { id },
+    });
+
+    if (!game) {
+      throw new NotFoundException(`Game with ID ${id} not found`);
+    }
+
+    if (game.tournamentId !== tournamentId) {
+      throw new BadRequestException('Game does not belong to the specified tournament');
+    }
+
+    await this.gamesRepository.remove(game);
   }
 }
 

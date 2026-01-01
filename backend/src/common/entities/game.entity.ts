@@ -25,8 +25,19 @@ export class Game extends BaseEntity {
   @Column({ name: 'game_number' })
   gameNumber: number;
 
+  @Column({ nullable: true })
+  region: string | null;
+
+  @ManyToOne(() => Game, { nullable: true })
+  @JoinColumn({ name: 'parent_game1_id' })
+  parentGame1: Game | null;
+
   @Column({ nullable: true, name: 'parent_game1_id' })
   parentGame1Id: string | null;
+
+  @ManyToOne(() => Game, { nullable: true })
+  @JoinColumn({ name: 'parent_game2_id' })
+  parentGame2: Game | null;
 
   @Column({ nullable: true, name: 'parent_game2_id' })
   parentGame2Id: string | null;
