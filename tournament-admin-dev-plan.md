@@ -85,33 +85,33 @@ This plan outlines the development of admin-only pages for managing tournaments,
 ---
 
 ### Task 1.3: Create Tournament Teams Module
-**Status:** ⏳ Pending
+**Status:** ✅ Completed
 
 **Backend Changes:**
-- [ ] Create tournament-teams module structure
+- [x] Create tournament-teams module structure
   - `backend/src/tournament-teams/tournament-teams.module.ts`
   - `backend/src/tournament-teams/tournament-teams.service.ts`
   - `backend/src/tournament-teams/tournament-teams.controller.ts`
-- [ ] Create DTOs:
+- [x] Create DTOs:
   - `CreateTournamentTeamDto` - tournamentId, teamId, region, seed
   - `UpdateTournamentTeamDto` - region, seed (optional)
-- [ ] Implement service methods:
+- [x] Implement service methods:
   - `findAllByTournament(tournamentId)` - Get all teams for tournament
   - `findOne(id)` - Get tournament team by ID
   - `create(dto)` - Create with validation
   - `update(id, dto)` - Update with validation
   - `remove(id)` - Delete tournament team
-- [ ] Implement controller endpoints:
+- [x] Implement controller endpoints:
   - `GET /api/tournaments/:tournamentId/teams` - List teams (admin only)
   - `POST /api/tournaments/:tournamentId/teams` - Add team (admin only)
   - `PUT /api/tournaments/:tournamentId/teams/:id` - Update (admin only)
   - `DELETE /api/tournaments/:tournamentId/teams/:id` - Remove (admin only)
-- [ ] Add validation:
+- [x] Add validation:
   - Team not already in tournament (unique constraint)
   - (region, seed) combination not already used
   - Region must be: 'East', 'West', 'South', 'Midwest'
   - Seed must be 1-16
-- [ ] Handle unique constraint violations with proper error messages
+- [x] Handle unique constraint violations with proper error messages
 
 **Files to Create:**
 - `backend/src/tournament-teams/tournament-teams.module.ts`

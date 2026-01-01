@@ -11,6 +11,7 @@ import { GamesModule } from './games/games.module';
 import { TeamsModule } from './teams/teams.module';
 import { ScoresModule } from './scores/scores.module';
 import { TournamentsModule } from './tournaments/tournaments.module';
+import { TournamentTeamsModule } from './tournament-teams/tournament-teams.module';
 import { CommonModule } from './common/common.module';
 import { DatabaseController } from './database/database.controller';
 import { getDatabaseConfig } from './database/database.config';
@@ -30,6 +31,7 @@ import { getDatabaseConfig } from './database/database.config';
     TeamsModule,
     ScoresModule,
     TournamentsModule,
+    TournamentTeamsModule,
   ],
   controllers: [AppController, DatabaseController],
   providers: [AppService],
