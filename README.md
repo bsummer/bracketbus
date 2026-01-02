@@ -163,6 +163,25 @@ bracketbus/
 - `GET /api/teams` - Get all teams
 - `GET /api/teams/:id` - Get team details
 
+### Tournaments (Admin Only)
+- `GET /api/tournaments` - Get all tournaments
+- `POST /api/tournaments` - Create tournament
+- `GET /api/tournaments/:id` - Get tournament details
+- `PUT /api/tournaments/:id` - Update tournament
+- `DELETE /api/tournaments/:id` - Delete tournament
+
+### Tournament Teams (Admin Only)
+- `GET /api/tournaments/:tournamentId/teams` - Get all teams for a tournament
+- `POST /api/tournaments/:tournamentId/teams` - Add team to tournament
+- `PUT /api/tournaments/:tournamentId/teams/:id` - Update tournament team assignment
+- `DELETE /api/tournaments/:tournamentId/teams/:id` - Remove team from tournament
+
+### Tournament Games (Admin Only)
+- `GET /api/tournaments/:tournamentId/games` - Get all games for a tournament (optional `?round=N` query)
+- `POST /api/tournaments/:tournamentId/games` - Create game in tournament
+- `PUT /api/tournaments/:tournamentId/games/:id` - Update game in tournament
+- `DELETE /api/tournaments/:tournamentId/games/:id` - Delete game from tournament
+
 ## License
 
 ISC
