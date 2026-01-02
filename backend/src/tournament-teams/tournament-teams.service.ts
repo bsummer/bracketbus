@@ -5,6 +5,16 @@ import { TournamentTeam, Tournament, Team } from '../common/entities';
 import { CreateTournamentTeamDto } from './dto/create-tournament-team.dto';
 import { UpdateTournamentTeamDto } from './dto/update-tournament-team.dto';
 
+/**
+ * Service for managing tournament teams.
+ * Handles assignment of teams to tournaments with region and seed validation.
+ * 
+ * Business Rules:
+ * - Each team can only be assigned once per tournament
+ * - Region + seed combination must be unique per tournament
+ * - Valid regions: East, West, South, Midwest
+ * - Valid seeds: 1-16 per region
+ */
 @Injectable()
 export class TournamentTeamsService {
   constructor(
@@ -46,6 +56,20 @@ export class TournamentTeamsService {
     return tournamentTeam;
   }
 
+  /**
+   * Adds a team to a tournament.
+   * Validation Rules:
+   * - Tournament must exist
+   * - Team must exist
+   * - Team cannot already be in the tournament
+   * - Region + seed combination must be unique in the tournament
+   * 
+   * @param tournamentId - Tournament UUID
+   * @param createTournamentTeamDto - Team assignment data (teamId, region, seed)
+   * @returns Created tournament team entity
+   * @throws NotFoundException if tournament or team not found
+   * @throws ConflictException if team already in tournament or region+seed conflict
+   */
   async create(
     tournamentId: string,
     createTournamentTeamDto: CreateTournamentTeamDto,

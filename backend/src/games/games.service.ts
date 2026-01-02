@@ -7,6 +7,17 @@ import { CreateTournamentGameDto } from './dto/create-tournament-game.dto';
 import { UpdateTournamentGameDto } from './dto/update-tournament-game.dto';
 import { GameStatus } from '../common/entities/game.entity';
 
+/**
+ * Service for managing tournament games.
+ * Handles game creation with complex validation rules based on round number.
+ * 
+ * Business Rules:
+ * - Round 1: Requires region, team1Id, team2Id. Teams must be in tournament with matching region.
+ * - Round 2+: Requires parentGame1Id and parentGame2Id from previous round.
+ * - Game numbers must be unique per tournament and round.
+ * - Teams cannot appear in multiple games within the same round.
+ * - Parent games cannot be reused in the same round.
+ */
 @Injectable()
 export class GamesService {
   constructor(
@@ -177,6 +188,25 @@ export class GamesService {
     return this.enrichGamesWithTeamData(games);
   }
 
+  /**
+   * Creates a new game for a tournament.
+   * 
+   * Validation Rules by Round:
+   * - Round 1: region, team1Id, team2Id required. Teams must exist in tournament with matching region.
+   * - Round 2+: parentGame1Id, parentGame2Id required. Parent games must be from previous round.
+   * 
+   * Additional Rules:
+   * - Game number must be unique per tournament and round
+   * - Teams cannot appear in multiple games in the same round
+   * - Parent games cannot be reused in the same round
+   * 
+   * @param tournamentId - Tournament UUID
+   * @param createDto - Game creation data
+   * @returns Created game entity
+   * @throws NotFoundException if tournament not found
+   * @throws BadRequestException if validation fails
+   * @throws ConflictException if game number or team/parent game conflicts
+   */
   async createForTournament(tournamentId: string, createDto: CreateTournamentGameDto): Promise<Game> {
     // Verify tournament exists
     const tournament = await this.tournamentsRepository.findOne({
