@@ -6,7 +6,7 @@ export class AddUserRoleColumn1766870194438 implements MigrationInterface {
     public async up(queryRunner: QueryRunner): Promise<void> {
         await queryRunner.query(`CREATE TYPE "public"."users_role_enum" AS ENUM('admin', 'user')`);
         await queryRunner.query(`ALTER TABLE "users" ADD "role" "public"."users_role_enum" NOT NULL DEFAULT 'user'`);
-        await queryRunner.query(`UPDATE "users" SET "role" = 'admin' WHERE "username" = 'admin' limit 1`);
+        await queryRunner.query(`UPDATE "users" SET "role" = 'admin' WHERE "username" = 'admin'`);
     }
 
     public async down(queryRunner: QueryRunner): Promise<void> {
