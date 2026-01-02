@@ -1,5 +1,6 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
+import AdminRoute from './components/common/AdminRoute';
 import LoginPage from './pages/LoginPage';
 import DashboardPage from './pages/DashboardPage';
 import BracketListPage from './pages/BracketListPage';
@@ -150,41 +151,41 @@ function AppRoutes() {
       <Route
         path="/admin/tournaments"
         element={
-          <ProtectedRoute>
+          <AdminRoute>
             <AdminTournamentsPage />
-          </ProtectedRoute>
+          </AdminRoute>
         }
       />
       <Route
         path="/admin/tournaments/new"
         element={
-          <ProtectedRoute>
+          <AdminRoute>
             <AdminCreateTournamentPage />
-          </ProtectedRoute>
+          </AdminRoute>
         }
       />
       <Route
         path="/admin/tournaments/:id/edit"
         element={
-          <ProtectedRoute>
+          <AdminRoute>
             <AdminCreateTournamentPage />
-          </ProtectedRoute>
+          </AdminRoute>
         }
       />
       <Route
         path="/admin/tournaments/:tournamentId/teams"
         element={
-          <ProtectedRoute>
+          <AdminRoute>
             <AdminTournamentTeamsPage />
-          </ProtectedRoute>
+          </AdminRoute>
         }
       />
       <Route
         path="/admin/tournaments/:tournamentId/games"
         element={
-          <ProtectedRoute>
+          <AdminRoute>
             <AdminTournamentGamesPage />
-          </ProtectedRoute>
+          </AdminRoute>
         }
       />
       <Route

@@ -459,13 +459,13 @@ This plan outlines the development of admin-only pages for managing tournaments,
 ## Phase 6: Navigation & Integration
 
 ### Task 6.1: Update Header Navigation
-**Status:** ⏳ Pending
+**Status:** ✅ Completed
 
 **Frontend Changes:**
-- [ ] Update `web/src/components/common/Header.tsx`
-- [ ] Add "Tournaments" link under Admin dropdown
-- [ ] Link should navigate to `/admin/tournaments`
-- [ ] Ensure admin check is in place (only show for admin users)
+- [x] Update `web/src/components/common/Header.tsx`
+- [x] Add "Tournaments" link under Admin dropdown
+- [x] Link should navigate to `/admin/tournaments`
+- [x] Ensure admin check is in place (only show for admin users - already handled by `isAdmin` check)
 
 **Files to Modify:**
 - `web/src/components/common/Header.tsx`
@@ -475,13 +475,13 @@ This plan outlines the development of admin-only pages for managing tournaments,
 ---
 
 ### Task 6.2: Add Admin Route Protection
-**Status:** ⏳ Pending
+**Status:** ✅ Completed
 
 **Frontend Changes:**
-- [ ] Create `AdminRoute` component (similar to `ProtectedRoute`)
-- [ ] Check if user is admin
-- [ ] Redirect to dashboard if not admin
-- [ ] Apply to all tournament admin routes:
+- [x] Create `AdminRoute` component (similar to `ProtectedRoute`)
+- [x] Check if user is admin
+- [x] Redirect to dashboard if not admin
+- [x] Apply to all tournament admin routes:
   - `/admin/tournaments`
   - `/admin/tournaments/new`
   - `/admin/tournaments/:id/edit`
@@ -489,11 +489,11 @@ This plan outlines the development of admin-only pages for managing tournaments,
   - `/admin/tournaments/:tournamentId/games`
 
 **Files to Create:**
-- `web/src/components/common/AdminRoute.tsx` (or add to existing route component)
+- `web/src/components/common/AdminRoute.tsx`
 
 **Files to Modify:**
 - `web/src/App.tsx`
-- `web/src/context/AuthContext.tsx` (ensure admin role is available)
+- `web/src/context/AuthContext.tsx` (admin role already available via `isAdmin`)
 
 **Estimated Time:** 1-2 hours
 
