@@ -133,16 +133,46 @@ export class GamesService {
       throw new NotFoundException(`Tournament with ID ${tournamentId} not found`);
     }
 
-    const where: any = { tournamentId };
+    // Use query builder - load parent games separately to avoid UUID join issues
+    const queryBuilder = this.gamesRepository
+      .createQueryBuilder('game')
+      .leftJoinAndSelect('game.team1', 'team1')
+      .leftJoinAndSelect('game.team2', 'team2')
+      .leftJoinAndSelect('game.winner', 'winner')
+      .leftJoinAndSelect('game.tournament', 'tournament')
+      .where('game.tournament_id = :tournamentId', { tournamentId });
+
     if (round !== undefined) {
-      where.round = round;
+      queryBuilder.andWhere('game.round = :round', { round });
     }
 
-    const games = await this.gamesRepository.find({
-      where,
-      relations: ['team1', 'team2', 'winner', 'tournament', 'parentGame1', 'parentGame2'],
-      order: { round: 'ASC', gameNumber: 'ASC' },
+    queryBuilder.orderBy('game.round', 'ASC').addOrderBy('game.gameNumber', 'ASC');
+
+    const games = await queryBuilder.getMany();
+
+    // Load parent games separately if they exist to avoid UUID join type issues
+    const parentGameIds = new Set<string>();
+    games.forEach((game) => {
+      if (game.parentGame1Id) parentGameIds.add(game.parentGame1Id);
+      if (game.parentGame2Id) parentGameIds.add(game.parentGame2Id);
     });
+
+    if (parentGameIds.size > 0) {
+      const parentGames = await this.gamesRepository.find({
+        where: { id: In(Array.from(parentGameIds)) },
+      });
+      const parentGamesMap = new Map(parentGames.map((pg) => [pg.id, pg]));
+
+      // Attach parent games to the main games
+      games.forEach((game) => {
+        if (game.parentGame1Id && parentGamesMap.has(game.parentGame1Id)) {
+          game.parentGame1 = parentGamesMap.get(game.parentGame1Id)!;
+        }
+        if (game.parentGame2Id && parentGamesMap.has(game.parentGame2Id)) {
+          game.parentGame2 = parentGamesMap.get(game.parentGame2Id)!;
+        }
+      });
+    }
 
     return this.enrichGamesWithTeamData(games);
   }
