@@ -146,7 +146,7 @@ const BracketDetailPage = () => {
 
         <div className="region-filters">
           <span className="region-filter-label">Filter by region:</span>
-          {availableRegions.map((region, index) => (
+          {availableRegions.map((region) => (
               
             <span key={region}>
               <button
