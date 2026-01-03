@@ -58,6 +58,13 @@ const Header = () => {
               {isAdminDropdownOpen && (
                 <div className="dropdown-menu">
                   <Link 
+                    to="/admin/tournaments" 
+                    className="dropdown-item"
+                    onClick={() => setIsAdminDropdownOpen(false)}
+                  >
+                    Tournaments
+                  </Link>
+                  <Link 
                     to="/admin/games" 
                     className="dropdown-item"
                     onClick={() => setIsAdminDropdownOpen(false)}

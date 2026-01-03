@@ -1,5 +1,6 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
+import AdminRoute from './components/common/AdminRoute';
 import LoginPage from './pages/LoginPage';
 import CreateUserPage from './pages/CreateUserPage';
 import DashboardPage from './pages/DashboardPage';
@@ -15,6 +16,10 @@ import EditGamePage from './pages/EditGamePage';
 import AdminCreateUserPage from './pages/AdminCreateUserPage';
 import AdminAddUserToPoolPage from './pages/AdminAddUserToPoolPage';
 import AdminUserListPage from './pages/AdminUserListPage';
+import AdminTournamentsPage from './pages/AdminTournamentsPage';
+import AdminCreateTournamentPage from './pages/AdminCreateTournamentPage';
+import AdminTournamentTeamsPage from './pages/AdminTournamentTeamsPage';
+import AdminTournamentGamesPage from './pages/AdminTournamentGamesPage';
 import './App.css';
 
 const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -143,6 +148,46 @@ function AppRoutes() {
           <ProtectedRoute>
             <AdminAddUserToPoolPage />
           </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/admin/tournaments"
+        element={
+          <AdminRoute>
+            <AdminTournamentsPage />
+          </AdminRoute>
+        }
+      />
+      <Route
+        path="/admin/tournaments/new"
+        element={
+          <AdminRoute>
+            <AdminCreateTournamentPage />
+          </AdminRoute>
+        }
+      />
+      <Route
+        path="/admin/tournaments/:id/edit"
+        element={
+          <AdminRoute>
+            <AdminCreateTournamentPage />
+          </AdminRoute>
+        }
+      />
+      <Route
+        path="/admin/tournaments/:tournamentId/teams"
+        element={
+          <AdminRoute>
+            <AdminTournamentTeamsPage />
+          </AdminRoute>
+        }
+      />
+      <Route
+        path="/admin/tournaments/:tournamentId/games"
+        element={
+          <AdminRoute>
+            <AdminTournamentGamesPage />
+          </AdminRoute>
         }
       />
       <Route

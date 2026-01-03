@@ -5,6 +5,7 @@ import { Team } from './team.entity';
 
 @Entity('tournament_teams')
 @Unique(['tournamentId', 'teamId'])
+@Unique(['tournamentId', 'region', 'seed'])
 export class TournamentTeam extends BaseEntity {
   @ManyToOne(() => Tournament)
   @JoinColumn({ name: 'tournament_id' })
