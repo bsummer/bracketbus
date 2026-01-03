@@ -1,11 +1,14 @@
 import { useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, Link } from 'react-router-dom';
 import { poolsApi } from '../api/pools';
 import type { Pool } from '../api/pools';
+import { useAuth } from '../context/AuthContext';
+import Header from '../components/common/Header';
 import './PublicPoolPage.css';
 
 const PublicPoolPage = () => {
   const { poolName } = useParams<{ poolName: string }>();
+  const { isAuthenticated } = useAuth();
   const [pool, setPool] = useState<Pool | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -27,16 +30,64 @@ const PublicPoolPage = () => {
   };
 
   if (loading) {
-    return <div className="public-page">Loading...</div>;
+    return (
+      <div className="public-page">
+        {!isAuthenticated && (
+          <header className="public-header">
+            <div className="public-header-content">
+              <Link to="/" className="public-logo">
+                BracketBus
+              </Link>
+              <Link to="/login" className="public-login-link">
+                Login
+              </Link>
+            </div>
+          </header>
+        )}
+        {isAuthenticated && <Header />}
+        <div className="public-page-content">Loading...</div>
+      </div>
+    );
   }
 
   if (!pool) {
-    return <div className="public-page">Pool not found</div>;
+    return (
+      <div className="public-page">
+        {!isAuthenticated && (
+          <header className="public-header">
+            <div className="public-header-content">
+              <Link to="/" className="public-logo">
+                BracketBus
+              </Link>
+              <Link to="/login" className="public-login-link">
+                Login
+              </Link>
+            </div>
+          </header>
+        )}
+        {isAuthenticated && <Header />}
+        <div className="public-page-content">Pool not found</div>
+      </div>
+    );
   }
 
   return (
     <div className="public-page">
-      <div className="public-container">
+      {!isAuthenticated && (
+        <header className="public-header">
+          <div className="public-header-content">
+            <Link to="/" className="public-logo">
+              BracketBus
+            </Link>
+            <Link to="/login" className="public-login-link">
+              Login
+            </Link>
+          </div>
+        </header>
+      )}
+      {isAuthenticated && <Header />}
+      <div className="public-page-content">
+        <div className="public-container">
         <h1>{pool.name}</h1>
         <div className="pool-info">
           <p>Tournament: {pool.tournament?.name || 'Unknown'}</p>
@@ -67,6 +118,7 @@ const PublicPoolPage = () => {
           )}
         </section>
 
+        </div>
       </div>
     </div>
   );
