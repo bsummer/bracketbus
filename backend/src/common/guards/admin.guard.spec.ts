@@ -1,14 +1,11 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { ExecutionContext } from '@nestjs/common';
+import { ExecutionContext, ForbiddenException } from '@nestjs/common';
 import { getRepositoryToken } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
 import { AdminGuard } from './admin.guard';
 import { User, UserRole } from '../entities/user.entity';
-import { ForbiddenException } from '@nestjs/common';
 
 describe('AdminGuard', () => {
   let guard: AdminGuard;
-  let userRepository: Repository<User>;
 
   const mockUserRepository = {
     findOne: jest.fn(),
@@ -33,7 +30,6 @@ describe('AdminGuard', () => {
     }).compile();
 
     guard = module.get<AdminGuard>(AdminGuard);
-    userRepository = module.get<Repository<User>>(getRepositoryToken(User));
 
     jest.clearAllMocks();
   });

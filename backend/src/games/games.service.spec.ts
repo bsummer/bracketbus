@@ -1,6 +1,6 @@
+/// <reference types="jest" />
 import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
-import { Repository, In } from 'typeorm';
 import { GamesService } from './games.service';
 import { Game, TournamentTeam, Tournament, Team, GameStatus } from '../common/entities';
 import { ScoresService } from '../scores/scores.service';
@@ -12,11 +12,6 @@ import {
 
 describe('GamesService', () => {
   let service: GamesService;
-  let gamesRepository: Repository<Game>;
-  let tournamentTeamRepository: Repository<TournamentTeam>;
-  let tournamentsRepository: Repository<Tournament>;
-  let teamsRepository: Repository<Team>;
-  let scoresService: ScoresService;
 
   const mockGamesRepository = {
     createQueryBuilder: jest.fn(),
@@ -72,16 +67,7 @@ describe('GamesService', () => {
     }).compile();
 
     service = module.get<GamesService>(GamesService);
-    gamesRepository = module.get<Repository<Game>>(getRepositoryToken(Game));
-    tournamentTeamRepository = module.get<Repository<TournamentTeam>>(
-      getRepositoryToken(TournamentTeam),
-    );
-    tournamentsRepository = module.get<Repository<Tournament>>(
-      getRepositoryToken(Tournament),
-    );
-    teamsRepository = module.get<Repository<Team>>(getRepositoryToken(Team));
-    scoresService = module.get<ScoresService>(ScoresService);
-
+    
     jest.clearAllMocks();
   });
 

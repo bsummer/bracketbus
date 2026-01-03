@@ -1,4 +1,4 @@
-import { IsOptional, IsNumber, IsString, IsUUID, IsEnum, IsDateString, Min, Max, IsIn } from 'class-validator';
+import { IsOptional, IsNumber, IsString, IsUUID, IsEnum, IsDateString, Min, IsIn } from 'class-validator';
 import { GameStatus } from '../../common/entities/game.entity';
 
 export class UpdateTournamentGameDto {

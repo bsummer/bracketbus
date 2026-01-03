@@ -1,15 +1,11 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
 import { TournamentTeamsService } from './tournament-teams.service';
 import { TournamentTeam, Tournament, Team } from '../common/entities';
 import { ConflictException, NotFoundException } from '@nestjs/common';
 
 describe('TournamentTeamsService', () => {
   let service: TournamentTeamsService;
-  let tournamentTeamRepository: Repository<TournamentTeam>;
-  let tournamentRepository: Repository<Tournament>;
-  let teamRepository: Repository<Team>;
 
   const mockTournamentTeamRepository = {
     find: jest.fn(),
@@ -47,14 +43,7 @@ describe('TournamentTeamsService', () => {
     }).compile();
 
     service = module.get<TournamentTeamsService>(TournamentTeamsService);
-    tournamentTeamRepository = module.get<Repository<TournamentTeam>>(
-      getRepositoryToken(TournamentTeam),
-    );
-    tournamentRepository = module.get<Repository<Tournament>>(
-      getRepositoryToken(Tournament),
-    );
-    teamRepository = module.get<Repository<Team>>(getRepositoryToken(Team));
-
+    
     jest.clearAllMocks();
   });
 

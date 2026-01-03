@@ -17,7 +17,15 @@
     "strictBindCallApply": false,
     "forceConsistentCasingInFileNames": false,
     "noFallthroughCasesInSwitch": false,
-    "esModuleInterop": true
-  }
+    "esModuleInterop": true,
+    "types": [],
+    "typeRoots": ["./node_modules/@types"]
+  },
+  "exclude": [
+    "node_modules",
+    "dist",
+    "test",
+    "**/*.spec.ts"
+  ]
 }
 

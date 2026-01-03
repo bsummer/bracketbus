@@ -1,6 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { INestApplication } from '@nestjs/common';
-import * as request from 'supertest';
+import request from 'supertest';
 import { AppModule } from '../src/app.module';
 
 describe('Tournament Games (e2e)', () => {
@@ -9,8 +9,6 @@ describe('Tournament Games (e2e)', () => {
   let tournamentId: string;
   let team1Id: string;
   let team2Id: string;
-  let tournamentTeam1Id: string;
-  let tournamentTeam2Id: string;
   let round1Game1Id: string;
 
   beforeAll(async () => {
