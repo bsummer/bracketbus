@@ -18,7 +18,7 @@
     "forceConsistentCasingInFileNames": false,
     "noFallthroughCasesInSwitch": false,
     "esModuleInterop": true,
-    "types": [],
+    "types": ["node"],
     "typeRoots": ["./node_modules/@types"]
   },
   "exclude": [
