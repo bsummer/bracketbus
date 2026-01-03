@@ -11,6 +11,8 @@ export class BracketResponseDto {
   updated_at: Date;
   user: User;
   pool: any;
+  winnerId: string | null;
+  pointsEarned: number;
   picks: any[];
 
   static fromEntity(bracket: Bracket, isLocked: boolean): BracketResponseDto {
@@ -25,6 +27,8 @@ export class BracketResponseDto {
       updated_at: bracket.updated_at,
       user: bracket.user,
       pool: bracket.pool,
+      winnerId: bracket.winnerId,
+      pointsEarned: bracket.pointsEarned,
       picks: bracket.picks,
     };
   }

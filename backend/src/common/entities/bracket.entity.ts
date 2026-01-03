@@ -27,6 +27,12 @@ export class Bracket extends BaseEntity {
   @Column({ type: 'timestamp', nullable: true, name: 'locked_at' })
   lockedAt: Date | null;
 
+  @Column({ default: 0, name: 'points_earned' })
+  pointsEarned: number;
+
+  @Column({ nullable: true, name: 'winner_id' })
+  winnerId: string | null;
+
   @OneToMany(() => Pick, (pick) => pick.bracket, { cascade: true })
   picks: Pick[];
 }
