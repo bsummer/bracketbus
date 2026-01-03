@@ -204,11 +204,11 @@ const BracketDetailPage = () => {
                               <div className="pick-info">
                                 <div className={game?.winnerId === team1?.id ? "team winner" 
                                   : predicted?.id === team1?.id ? "team predicted" : "team"}>
-                                  <span className="logo-container">
-                                    <img src={team1?.logoUrl} alt={team1?.name} className="team-logo" />
-                                  </span>
                                   <span className="seed-container">
                                     {team1?.seed}
+                                  </span>
+                                  <span className="logo-container">
+                                    <img src={team1?.logoUrl} alt={team1?.name} className="team-logo" />
                                   </span>
                                   <span className="name-container">
                                     {team1 ? `${team1?.name}` : 'TBD'}
@@ -219,11 +219,11 @@ const BracketDetailPage = () => {
                                 </div>
                                 <div className={game?.winnerId === team2?.id ? "team winner" 
                                   : predicted?.id === team2?.id ? "team predicted" : "team"}>
-                                  <span className="logo-container">
-                                    <img src={team2?.logoUrl} alt={team2?.name} className="team-logo" />
-                                  </span>
                                   <span className="seed-container">
                                     {team2?.seed}
+                                  </span>
+                                  <span className="logo-container">
+                                    <img src={team2?.logoUrl} alt={team2?.name} className="team-logo" />
                                   </span>
                                   <span className="name-container">
                                     {team2 ? `${team2?.name}` : 'TBD'}
