@@ -20,6 +20,7 @@ import AdminTournamentsPage from './pages/AdminTournamentsPage';
 import AdminCreateTournamentPage from './pages/AdminCreateTournamentPage';
 import AdminTournamentTeamsPage from './pages/AdminTournamentTeamsPage';
 import AdminTournamentGamesPage from './pages/AdminTournamentGamesPage';
+import HomePage from './pages/HomePage';
 import './App.css';
 
 const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -43,6 +44,7 @@ const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) =
 function AppRoutes() {
   return (
     <Routes>
+      <Route path="/" element={<HomePage />} />
       <Route path="/login" element={<LoginPage />} />
       <Route path="/register" element={<CreateUserPage />} />
       <Route path="/pools/:id/public" element={<PublicPoolPage />} />
@@ -196,7 +198,6 @@ function AppRoutes() {
             <PublicPoolPage />
         }
       />
-      <Route path="/" element={<Navigate to="/dashboard" replace />} />
     </Routes>
   );
 }
