@@ -30,6 +30,9 @@ export class Bracket extends BaseEntity {
   @Column({ default: 0, name: 'points_earned' })
   pointsEarned: number;
 
+  @Column({ nullable: true, name: 'winner_id' })
+  winnerId: string | null;
+
   @OneToMany(() => Pick, (pick) => pick.bracket, { cascade: true })
   picks: Pick[];
 }
