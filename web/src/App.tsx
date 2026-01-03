@@ -1,6 +1,7 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import LoginPage from './pages/LoginPage';
+import CreateUserPage from './pages/CreateUserPage';
 import DashboardPage from './pages/DashboardPage';
 import BracketListPage from './pages/BracketListPage';
 import CreateBracketPage from './pages/CreateBracketPage';
@@ -38,6 +39,7 @@ function AppRoutes() {
   return (
     <Routes>
       <Route path="/login" element={<LoginPage />} />
+      <Route path="/register" element={<CreateUserPage />} />
       <Route path="/pools/:id/public" element={<PublicPoolPage />} />
       <Route
         path="/dashboard"

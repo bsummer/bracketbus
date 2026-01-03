@@ -39,5 +39,9 @@ export const usersApi = {
     const response = await apiClient.post<User>('/users', data);
     return response.data;
   },
+  createPublic: async (data: Omit<CreateUserDto, 'poolId'>): Promise<User> => {
+    const response = await apiClient.post<User>('/auth/register', data);
+    return response.data;
+  },
 };
 
