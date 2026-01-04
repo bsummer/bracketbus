@@ -164,8 +164,7 @@ const BracketDetailPage = () => {
           {Object.entries(picksByRegionAndRound).map(([region, picksByRound]) => {
             const position = regionPositions[region] || 'center';
             const isCenter = region === 'center';
-            console.log(selectedRegion, "region", region);
-
+            
             // Hide region if a specific region is selected and this isn't it
             // Always show center region, or show it when no region is selected
             const shouldShow = selectedRegion === null 
@@ -173,7 +172,6 @@ const BracketDetailPage = () => {
               : selectedRegion === region;
             
             if (!shouldShow) return null;
-            console.log("shouldShow", shouldShow);
             
             return (
               <div key={region} className={`bracket-region bracket-region-${position}`}>

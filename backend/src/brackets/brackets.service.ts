@@ -237,6 +237,7 @@ export class BracketsService {
     );
 
     await this.picksRepository.save(picks);
+    await this.updateBracketWinner(savedBracket.id);
 
     return this.findOne(savedBracket.id);
   }
@@ -329,6 +330,8 @@ export class BracketsService {
       await this.picksRepository.save(picks);
     }
 
+    await this.updateBracketWinner(id);
+
     return this.findOne(id);
   }
 
@@ -345,5 +348,21 @@ export class BracketsService {
 
     await this.bracketsRepository.remove(bracket);
   }
-}
 
+  async updateBracketWinner(bracketId: string): Promise<Bracket> {
+    const bracket = await this.findOne(bracketId);
+
+    const picks = bracket.picks;
+
+    const lastPick: Pick = picks.reduce((max, pick) => {
+      return pick.game.gameNumber > max.game.gameNumber ? pick : max;
+    });
+
+    if (bracket.winnerId !== lastPick.predictedWinnerId) {
+      bracket.winnerId = lastPick.predictedWinnerId;
+      await this.bracketsRepository.save(bracket);
+    }
+
+    return bracket;
+  }
+}
