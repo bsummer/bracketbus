@@ -353,6 +353,9 @@ export class BracketsService {
     const bracket = await this.findOne(bracketId);
 
     const picks = bracket.picks;
+    if (picks.length === 0) {
+      return bracket;
+    }
 
     const lastPick: Pick = picks.reduce((max, pick) => {
       return pick.game.gameNumber > max.game.gameNumber ? pick : max;
