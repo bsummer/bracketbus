@@ -1,10 +1,10 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ScoresService } from './scores.service';
-import { Pick, Score, Bracket } from '../common/entities';
+import { Pick, Bracket } from '../common/entities';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Pick, Score, Bracket])],
+  imports: [TypeOrmModule.forFeature([Pick, Bracket])],
   providers: [ScoresService],
   exports: [ScoresService],
 })
