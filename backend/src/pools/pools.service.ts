@@ -98,7 +98,7 @@ export class PoolsService {
   async findOne(id: string): Promise<Pool> {
     const pool = await this.poolsRepository.findOne({
       where: { id },
-      relations: ['tournament', 'creator', 'members', 'members.user', 'brackets', 'brackets.user'],
+      relations: ['tournament', 'creator', 'members', 'members.user', 'brackets', 'brackets.user', 'brackets.winner'],
     });
 
     if (!pool) {

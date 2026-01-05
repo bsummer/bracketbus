@@ -1,4 +1,4 @@
-import { Bracket, User } from '../../common/entities';
+import { Bracket, User, Team } from '../../common/entities';
 
 export class BracketResponseDto {
   id: string;
@@ -12,6 +12,7 @@ export class BracketResponseDto {
   user: User;
   pool: any;
   winnerId: string | null;
+  winner: Team | null;
   pointsEarned: number;
   picks: any[];
 
@@ -28,6 +29,7 @@ export class BracketResponseDto {
       user: bracket.user,
       pool: bracket.pool,
       winnerId: bracket.winnerId,
+      winner: bracket.winner,
       pointsEarned: bracket.pointsEarned,
       picks: bracket.picks,
     };
