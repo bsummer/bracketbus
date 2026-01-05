@@ -237,8 +237,12 @@ const AdminTournamentGamesPage: React.FC = () => {
           updateData.team1Id = formData.team1Id;
           updateData.team2Id = formData.team2Id;
         } else {
-          updateData.parentGame1Id = formData.parentGame1Id;
-          updateData.parentGame2Id = formData.parentGame2Id;
+          if (formData.parentGame1Id && formData.parentGame1Id.trim()) {
+            updateData.parentGame1Id = formData.parentGame1Id;
+          }
+          if (formData.parentGame2Id && formData.parentGame2Id.trim()) {
+            updateData.parentGame2Id = formData.parentGame2Id;
+          }
           if (formData.region) {
             updateData.region = formData.region;
           }
