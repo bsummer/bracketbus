@@ -4,6 +4,7 @@ import { poolsApi } from '../api/pools';
 import type { Pool } from '../api/pools';
 import { useAuth } from '../context/AuthContext';
 import Header from '../components/common/Header';
+import HeaderPublic from '../components/common/HeaderPublic';
 import './PublicPoolPage.css';
 
 const PublicPoolPage = () => {
@@ -32,18 +33,7 @@ const PublicPoolPage = () => {
   if (loading) {
     return (
       <div className="public-page">
-        {!isAuthenticated && (
-          <header className="public-header">
-            <div className="public-header-content">
-              <Link to="/" className="public-logo">
-                BracketBus
-              </Link>
-              <Link to="/login" className="public-login-link">
-                Login
-              </Link>
-            </div>
-          </header>
-        )}
+        {!isAuthenticated && <HeaderPublic />}
         {isAuthenticated && <Header />}
         <div className="public-page-content">Loading...</div>
       </div>
@@ -53,18 +43,7 @@ const PublicPoolPage = () => {
   if (!pool) {
     return (
       <div className="public-page">
-        {!isAuthenticated && (
-          <header className="public-header">
-            <div className="public-header-content">
-              <Link to="/" className="public-logo">
-                BracketBus
-              </Link>
-              <Link to="/login" className="public-login-link">
-                Login
-              </Link>
-            </div>
-          </header>
-        )}
+        {!isAuthenticated && <HeaderPublic />}
         {isAuthenticated && <Header />}
         <div className="public-page-content">Pool not found</div>
       </div>
@@ -73,18 +52,7 @@ const PublicPoolPage = () => {
 
   return (
     <div className="public-page">
-      {!isAuthenticated && (
-        <header className="public-header">
-          <div className="public-header-content">
-            <Link to="/" className="public-logo">
-              BracketBus
-            </Link>
-            <Link to="/login" className="public-login-link">
-              Login
-            </Link>
-          </div>
-        </header>
-      )}
+      {!isAuthenticated && <HeaderPublic />}
       {isAuthenticated && <Header />}
       <div className="public-page-content">
         <div className="public-container">
