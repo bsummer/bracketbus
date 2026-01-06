@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 import { poolsApi } from '../api/pools';
 import type { Pool } from '../api/pools';
 import { useAuth } from '../context/AuthContext';
