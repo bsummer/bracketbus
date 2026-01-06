@@ -1,15 +1,13 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { Pick, Score, Game, Bracket } from '../common/entities';
+import { Pick, Game, Bracket } from '../common/entities';
 
 @Injectable()
 export class ScoresService {
   constructor(
     @InjectRepository(Pick)
     private picksRepository: Repository<Pick>,
-    @InjectRepository(Score)
-    private scoresRepository: Repository<Score>,
     @InjectRepository(Bracket)
     private bracketsRepository: Repository<Bracket>,
   ) {}
@@ -62,28 +60,20 @@ export class ScoresService {
    * Recalculate total score for a bracket
    */
   async updateBracketScore(bracketId: string): Promise<void> {
-    const picks = await this.picksRepository.find({
-      where: { bracketId },
-      relations: ['game'],
+    const bracket = await this.bracketsRepository.findOne({
+      where: { id: bracketId },
+      relations: ['picks', 'picks.game'],
     });
 
-    const totalPoints = picks.reduce((sum, pick) => sum + pick.pointsEarned, 0);
+    await this.updateBracketScoreByBracket(bracket);
+  }
 
-    // Find or create score record
-    let score = await this.scoresRepository.findOne({
-      where: { bracketId },
-    });
+  private async updateBracketScoreByBracket(bracket: Bracket): Promise<void> {
 
-    if (!score) {
-      score = this.scoresRepository.create({
-        bracketId,
-        totalPoints: 0,
-      });
-    }
+    const totalPoints = bracket.picks.reduce((sum, pick) => sum + pick.pointsEarned, 0);
 
-    score.totalPoints = totalPoints;
-    score.lastUpdated = new Date();
-    await this.scoresRepository.save(score);
+    bracket.pointsEarned = totalPoints;
+    await this.bracketsRepository.save(bracket);
   }
 
   /**
@@ -95,7 +85,7 @@ export class ScoresService {
     });
 
     for (const bracket of brackets) {
-      await this.updateBracketScore(bracket.id);
+      await this.updateBracketScoreByBracket(bracket);
     }
   }
 

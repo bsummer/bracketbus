@@ -104,6 +104,7 @@ const PublicPoolPage = () => {
                 <span className="rank">Rank</span>
                 <span className="username">Username</span>
                 <span className="bracket-name">Bracket Name</span>
+                <span className="pick">Pick</span>
                 <span className="score">Score</span>
               </div>
               {pool.brackets?.map((bracket: any, index: number) => (
@@ -111,7 +112,8 @@ const PublicPoolPage = () => {
                   <span className="rank">#{index + 1}</span>
                   <span className="username">{bracket.user?.username || 'Unknown'}</span>
                   <span className="bracket-name">{bracket.name}</span>
-                  <span className="score">{bracket.totalPoints? bracket.totalPoints : 0}</span>
+                  <span className="pick">{bracket.winner?.name || 'Unknown'}</span>
+                  <span className="score">{bracket.pointsEarned? bracket.pointsEarned : 0}</span>
                 </div>
               ))}
             </div>

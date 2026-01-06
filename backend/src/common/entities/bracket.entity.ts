@@ -3,6 +3,7 @@ import { BaseEntity } from './base.entity';
 import { User } from './user.entity';
 import { Pool } from './pool.entity';
 import { Pick } from './pick.entity';
+import { Team } from './team.entity';
 
 @Entity('brackets')
 @Unique(['userId', 'poolId'])
@@ -32,6 +33,10 @@ export class Bracket extends BaseEntity {
 
   @Column({ nullable: true, name: 'winner_id' })
   winnerId: string | null;
+
+  @ManyToOne(() => Team, { nullable: true })
+  @JoinColumn({ name: 'winner_id' })
+  winner: Team | null;
 
   @OneToMany(() => Pick, (pick) => pick.bracket, { cascade: true })
   picks: Pick[];

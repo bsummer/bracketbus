@@ -22,6 +22,9 @@ export interface Bracket {
   name: string;
   userId: string;
   poolId: string;
+  pointsEarned: number;
+  winnerId: string | null;
+  winner?: Team;
   lockedAt: string | null;
   isLocked: boolean;
   created_at: Date;
