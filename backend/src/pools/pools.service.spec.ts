@@ -182,6 +182,7 @@ describe('PoolsService', () => {
         creator: { id: 'user-1' },
         members: [],
         brackets: [],
+        winner: null,
       };
 
       mockPoolsRepository.findOne.mockResolvedValue(pool);
@@ -191,7 +192,7 @@ describe('PoolsService', () => {
       expect(result).toEqual(pool);
       expect(mockPoolsRepository.findOne).toHaveBeenCalledWith({
         where: { id: poolId },
-        relations: ['tournament', 'creator', 'members', 'members.user', 'brackets', 'brackets.user'],
+        relations: ['tournament', 'creator', 'members', 'members.user', 'brackets', 'brackets.user', 'brackets.winner'],
       });
     });
 
