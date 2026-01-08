@@ -16,11 +16,10 @@ export class TournamentsController {
 
   /**
    * GET /api/tournaments
-   * Retrieves all tournaments (admin only).
+   * Retrieves all tournaments (public).
    * @returns Array of tournaments sorted by start date
    */
   @Get()
-  @Admin()
   findAll() {
     return this.tournamentsService.findAll();
   }
@@ -40,12 +39,11 @@ export class TournamentsController {
 
   /**
    * GET /api/tournaments/:id
-   * Retrieves a tournament by ID (admin only).
+   * Retrieves a tournament by ID (public).
    * @param id - Tournament UUID
    * @returns Tournament entity
    */
   @Get(':id')
-  @Admin()
   findOne(@Param('id') id: string) {
     return this.tournamentsService.findOne(id);
   }

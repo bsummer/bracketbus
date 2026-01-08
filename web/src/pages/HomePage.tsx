@@ -17,6 +17,11 @@ const HomePage = () => {
           </p>
         </div>
         <div className="instructions-section">
+          <h2>Viewing Tournaments and Brackets</h2>
+          <p>
+            You can view tournaments and their brackets without logging in. 
+            <Link to="/tournaments" className="tournaments-link"> View all tournaments</Link> to see scheduled and completed games.
+          </p>
           <h2>Viewing Public Pool Pages</h2>
           <p>
             You can view public pool leaderboards and brackets without logging in. Public pools can be 

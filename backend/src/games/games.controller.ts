@@ -46,13 +46,12 @@ export class TournamentGamesController {
 
   /**
    * GET /api/tournaments/:tournamentId/games
-   * Retrieves all games for a tournament, optionally filtered by round (admin only).
+   * Retrieves all games for a tournament, optionally filtered by round (public).
    * @param tournamentId - Tournament UUID
    * @param round - Optional round number query parameter
    * @returns Array of games with team data
    */
   @Get()
-  @Admin()
   findAllByTournament(
     @Param('tournamentId') tournamentId: string,
     @Query('round') round?: string,
