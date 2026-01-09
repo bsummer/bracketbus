@@ -21,6 +21,8 @@ import AdminCreateTournamentPage from './pages/AdminCreateTournamentPage';
 import AdminTournamentTeamsPage from './pages/AdminTournamentTeamsPage';
 import AdminTournamentGamesPage from './pages/AdminTournamentGamesPage';
 import HomePage from './pages/HomePage';
+import TournamentsPage from './pages/TournamentsPage';
+import TournamentBracketPage from './pages/TournamentBracketPage';
 import './App.css';
 
 const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -191,6 +193,14 @@ function AppRoutes() {
             <AdminTournamentGamesPage />
           </AdminRoute>
         }
+      />
+      <Route
+        path="/tournaments"
+        element={<TournamentsPage />}
+      />
+      <Route
+        path="/tournaments/:tournamentId/bracket"
+        element={<TournamentBracketPage />}
       />
       <Route
         path="/:poolName"

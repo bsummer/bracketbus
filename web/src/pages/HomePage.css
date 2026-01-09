@@ -97,3 +97,13 @@
   font-weight: 600;
 }
 
+.tournaments-link {
+  color: #0066cc;
+  text-decoration: underline;
+  margin-left: 0.25rem;
+}
+
+.tournaments-link:hover {
+  color: #004499;
+}
+
