@@ -53,6 +53,11 @@
   border-color: #4CAF50;
 }
 
+.form-group input::placeholder {
+  color: #aaa; /* Lighter gray for placeholder */
+  font-style: italic;
+}
+
 button {
   width: 100%;
   padding: 0.75rem;

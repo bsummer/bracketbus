@@ -60,7 +60,7 @@
   border: 1px solid #fcc;
 }
 
-button {
+/* button {
   width: 100%;
   padding: 0.75rem;
   background: #007bff;
@@ -71,7 +71,7 @@ button {
   font-weight: 500;
   cursor: pointer;
   margin-top: 1rem;
-}
+} */
 
 button:hover:not(:disabled) {
   background: #0056b3;
