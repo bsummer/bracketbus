@@ -21,6 +21,7 @@ import AdminCreateTournamentPage from './pages/AdminCreateTournamentPage';
 import AdminTournamentTeamsPage from './pages/AdminTournamentTeamsPage';
 import AdminTournamentGamesPage from './pages/AdminTournamentGamesPage';
 import HomePage from './pages/HomePage';
+import JoinPoolPage from './pages/JoinPoolPage';
 import TournamentsPage from './pages/TournamentsPage';
 import TournamentBracketPage from './pages/TournamentBracketPage';
 import './App.css';
@@ -49,6 +50,7 @@ function AppRoutes() {
       <Route path="/" element={<HomePage />} />
       <Route path="/login" element={<LoginPage />} />
       <Route path="/register" element={<CreateUserPage />} />
+      <Route path="/pools/join" element={<JoinPoolPage />} />
       <Route path="/pools/:id/public" element={<PublicPoolPage />} />
       <Route
         path="/dashboard"

@@ -59,6 +59,12 @@ export class PoolsController {
     return this.poolsService.findOnePublic(id);
   }
 
+  @Post('join')
+  @UseGuards(JwtAuthGuard)
+  joinByCode(@Body() joinPoolDto: JoinPoolDto, @Request() req) {
+    return this.poolsService.join(joinPoolDto, req.user.userId);
+  }
+
   @Post(':id/join')
   @UseGuards(JwtAuthGuard)
   join(@Param('id') id: string, @Body() joinPoolDto: JoinPoolDto, @Request() req) {

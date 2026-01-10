@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate, Link, useLocation } from 'react-router-dom';
 import { usersApi } from '../api/users';
 import './CreateUserPage.css';
 
@@ -11,6 +11,8 @@ const CreateUserPage = () => {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+  const location = useLocation();
+  const returnUrl = (location.state as any)?.returnUrl;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -36,8 +38,12 @@ const CreateUserPage = () => {
         email,
         password,
       });
-      // Redirect to login page on success
-      navigate('/login', { state: { message: 'Account created successfully. Please login.' } });
+      // Redirect to login page on success, preserving returnUrl
+      const loginState: any = { message: 'Account created successfully. Please login.' };
+      if (returnUrl) {
+        loginState.returnUrl = returnUrl;
+      }
+      navigate('/login', { state: loginState });
     } catch (err: any) {
       const errorMessage = err?.response?.data?.message || 'Failed to create account';
       setError(errorMessage);
@@ -96,7 +102,7 @@ const CreateUserPage = () => {
           </button>
         </form>
         <div className="login-link">
-          <Link to="/login">Back to Login</Link>
+          <Link to="/login" state={returnUrl ? { returnUrl } : undefined}>Back to Login</Link>
         </div>
       </div>
     </div>

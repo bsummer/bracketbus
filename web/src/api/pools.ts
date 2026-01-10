@@ -63,6 +63,10 @@ export const poolsApi = {
     const response = await apiClient.post<Pool>('/pools', data);
     return response.data;
   },
+  joinByCode: async (inviteCode: string): Promise<Pool> => {
+    const response = await apiClient.post<Pool>('/pools/join', { inviteCode });
+    return response.data;
+  },
   join: async (id: string, data: JoinPoolDto): Promise<Pool> => {
     const response = await apiClient.post<Pool>(`/pools/${id}/join`, data);
     return response.data;
