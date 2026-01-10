@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { useNavigate, Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import './LoginPage.css';
 
@@ -8,8 +8,17 @@ const LoginPage = () => {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-  const { login } = useAuth();
+  const { login, isAuthenticated } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
+  const returnUrl = (location.state as any)?.returnUrl || '/dashboard';
+
+  // If already authenticated, redirect to return URL
+  useEffect(() => {
+    if (isAuthenticated) {
+      navigate(returnUrl, { replace: true });
+    }
+  }, [isAuthenticated, navigate, returnUrl]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -18,7 +27,8 @@ const LoginPage = () => {
 
     try {
       await login(username, password);
-      navigate('/dashboard');
+      // Navigate to return URL after successful login
+      navigate(returnUrl, { replace: true });
     } catch (err) {
       const errorMessage = err && typeof err === 'object' && 'response' in err
         ? (err as { response?: { data?: { message?: string } } }).response?.data?.message
@@ -61,7 +71,7 @@ const LoginPage = () => {
           </button>
         </form>
         <div className="create-account-link">
-          <Link to="/register">Create new account</Link>
+          <Link to="/register" state={returnUrl ? { returnUrl } : undefined}>Create new account</Link>
         </div>
       </div>
     </div>
