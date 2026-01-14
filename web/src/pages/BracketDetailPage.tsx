@@ -161,7 +161,7 @@ const BracketDetailPage = () => {
           {sortedRegions.map(([region, picksByRound]) => {
             const isCenter = region === 'center';
             const isExpanded = expandedRegions.has(region);
-            const regionTitle = isCenter ? 'Semis & Finals' : `${region} Region`;
+            const regionTitle = isCenter ? 'Final Four' : `${region} Region`;
             
             return (
               <div key={region} className="accordion-item">
