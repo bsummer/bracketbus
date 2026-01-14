@@ -252,6 +252,21 @@
   text-align: left;
 }
 
+.team-btn.tbd {
+  opacity: 0.7;
+  font-style: italic;
+}
+
+.tbd-placeholder {
+  display: inline-block;
+  width: 24px;
+  height: 24px;
+  line-height: 24px;
+  text-align: center;
+  color: #999;
+  font-size: 1.2rem;
+}
+
 /* Responsive adjustments */
 @media (max-width: 1200px) {
   .bracket-region {

@@ -180,29 +180,69 @@ const CreateBracketPage = () => {
     return { team1, team2 };
   }, [games, picks]);
 
-  // Group games by region and round
-  const gamesByRegionAndRound = useMemo(() => {
-    return games.reduce((acc: Record<string, Record<number, Game[]>>, game) => {
-      const round = game.round || 0;
+  // Helper function to get region from a game (for Round 2+ games, check parent games)
+  const getGameRegion = useCallback((game: Game, gamesMap: Map<string, Game>): string => {
+    const round = game.round || 0;
+    
+    // For rounds 5-6 (Final Four, Championship), always use 'center'
+    if (round >= 5) {
+      return 'center';
+    }
+    
+    // For Round 1, get region from teams
+    if (round === 1) {
+      const teamRegion = (game.team1 as any)?.region || (game.team2 as any)?.region;
+      if (teamRegion) {
+        return teamRegion;
+      }
+    }
+    
+    // For Round 2+, try to get region from parent games
+    if (round >= 2 && round <= 4) {
+      // Find parent games
+      const parent1Game = game.parentGame1Id ? gamesMap.get(game.parentGame1Id) : null;
+      const parent2Game = game.parentGame2Id ? gamesMap.get(game.parentGame2Id) : null;
       
-      // For rounds 1-4, group by region
-      // For rounds 5-6 (Final Four, Championship), use 'center'
-      let region = 'center';
-      if (round <= 4) {
-        const { team1, team2 } = getAvailableTeams(game);
-        // Get region from team1 (or team2 if team1 doesn't have it)
-        const teamRegion = (team1 as any)?.region || (team2 as any)?.region;
-        if (teamRegion) {
-          region = teamRegion;
+      // Try to get region from parent games (they should be in the same region)
+      if (parent1Game) {
+        const parent1Region = getGameRegion(parent1Game, gamesMap);
+        if (parent1Region !== 'center') {
+          return parent1Region;
         }
       }
+      if (parent2Game) {
+        const parent2Region = getGameRegion(parent2Game, gamesMap);
+        if (parent2Region !== 'center') {
+          return parent2Region;
+        }
+      }
+      
+      // If we can't determine from parents, try from available teams
+      const { team1, team2 } = getAvailableTeams(game);
+      const teamRegion = (team1 as any)?.region || (team2 as any)?.region;
+      if (teamRegion) {
+        return teamRegion;
+      }
+    }
+    
+    return 'center';
+  }, [getAvailableTeams]);
+
+  // Group games by region and round
+  const gamesByRegionAndRound = useMemo(() => {
+    // Create a map for faster lookups
+    const gamesMap = new Map(games.map(g => [g.id, g]));
+    
+    return games.reduce((acc: Record<string, Record<number, Game[]>>, game) => {
+      const round = game.round || 0;
+      const region = getGameRegion(game, gamesMap);
       
       if (!acc[region]) acc[region] = {};
       if (!acc[region][round]) acc[region][round] = [];
       acc[region][round].push(game);
       return acc;
     }, {});
-  }, [games, getAvailableTeams]);
+  }, [games, getGameRegion]);
 
   const toggleRegion = (region: string) => {
     setExpandedRegions(prev => {
@@ -415,7 +455,7 @@ const CreateBracketPage = () => {
                                         <div className="pick-info">
                                           <button
                                             type="button"
-                                            className={`team-btn ${selectedTeamId === team1?.id ? 'selected' : ''} ${isDisabled ? 'disabled' : ''}`}
+                                            className={`team-btn ${selectedTeamId === team1?.id ? 'selected' : ''} ${isDisabled ? 'disabled' : ''} ${!team1?.id ? 'tbd' : ''}`}
                                             onClick={() => {
                                               if (team1?.id && !isDisabled) {
                                                 handlePick(game.id, team1.id);
@@ -424,18 +464,22 @@ const CreateBracketPage = () => {
                                             disabled={!team1?.id || isDisabled}
                                           >
                                             <span className="seed-container">
-                                              {team1?.seed}
+                                              {team1?.seed || ''}
                                             </span>
                                             <span className="logo-container">
-                                              <img src={team1?.logoUrl} alt={team1?.name} className="team-logo" />
+                                              {team1?.logoUrl ? (
+                                                <img src={team1.logoUrl} alt={team1.name} className="team-logo" />
+                                              ) : (
+                                                <span className="tbd-placeholder">—</span>
+                                              )}
                                             </span>
                                             <span className="name-container">
-                                              {team1 ? `${team1?.name}` : 'TBD'}
+                                              {team1 ? team1.name : 'TBD'}
                                             </span>
                                           </button>
                                           <button
                                             type="button"
-                                            className={`team-btn ${selectedTeamId === team2?.id ? 'selected' : ''} ${isDisabled ? 'disabled' : ''}`}
+                                            className={`team-btn ${selectedTeamId === team2?.id ? 'selected' : ''} ${isDisabled ? 'disabled' : ''} ${!team2?.id ? 'tbd' : ''}`}
                                             onClick={() => {
                                               if (team2?.id && !isDisabled) {
                                                 handlePick(game.id, team2.id);
@@ -444,13 +488,17 @@ const CreateBracketPage = () => {
                                             disabled={!team2?.id || isDisabled}
                                           >
                                             <span className="seed-container">
-                                              {team2?.seed}
+                                              {team2?.seed || ''}
                                             </span>
                                             <span className="logo-container">
-                                              <img src={team2?.logoUrl} alt={team2?.name} className="team-logo" />
+                                              {team2?.logoUrl ? (
+                                                <img src={team2.logoUrl} alt={team2.name} className="team-logo" />
+                                              ) : (
+                                                <span className="tbd-placeholder">—</span>
+                                              )}
                                             </span>
                                             <span className="name-container">
-                                              {team2 ? `${team2?.name}` : 'TBD'}
+                                              {team2 ? team2.name : 'TBD'}
                                             </span>
                                           </button>
                                         </div>
