@@ -13,7 +13,7 @@ const BracketDetailPage = () => {
   const { user } = useAuth();
   const [bracket, setBracket] = useState<Bracket | null>(null);
   const [loading, setLoading] = useState(true);
-  const [selectedRegion, setSelectedRegion] = useState<string | null>(null); // Add this state
+  const [expandedRegions, setExpandedRegions] = useState<Set<string>>(new Set());
 
 
   const loadBracket = async () => {
@@ -112,18 +112,31 @@ const BracketDetailPage = () => {
     return acc;
   }, {});
 
-  // Define region positions
-  const regionPositions: Record<string, string> = {
-    'East': 'top-left',
-    'West': 'top-right',
-    'South': 'bottom-left',
-    'Midwest': 'bottom-right',
-    'center': 'center'
+
+  const toggleRegion = (region: string) => {
+    setExpandedRegions(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(region)) {
+        newSet.delete(region);
+      } else {
+        newSet.add(region);
+      }
+      return newSet;
+    });
   };
 
-   // Get available regions (excluding 'center')
-   const availableRegions = Object.keys(picksByRegionAndRound);
+  // Sort regions: East, West, South, Midwest, then center
+  const regionOrder: Record<string, number> = {
+    'East': 1,
+    'West': 2,
+    'South': 3,
+    'Midwest': 4,
+    'center': 5
+  };
 
+  const sortedRegions = Object.entries(picksByRegionAndRound).sort(([a], [b]) => {
+    return (regionOrder[a] || 99) - (regionOrder[b] || 99);
+  });
 
   return (
     <div>
@@ -144,110 +157,87 @@ const BracketDetailPage = () => {
           </div>
         </div>
 
-        <div className="region-filters">
-          <span className="region-filter-label">Filter by region:</span>
-          {availableRegions.map((region) => (
-              
-            <span key={region}>
-              <button
-                className={`region-filter-link ${selectedRegion === region ? 'active' : ''}`}
-                onClick={() => setSelectedRegion(region)}
-              >
-                {region === 'center' ? 'Semis & Finals' : region}
-              </button>
-            </span>
-          ))}
-        </div>
-
-        <div className={`bracket-container ${selectedRegion ? 'single-region-view' : ''}`}>
-          {/* Render each region */}
-          {Object.entries(picksByRegionAndRound).map(([region, picksByRound]) => {
-            const position = regionPositions[region] || 'center';
+        <div className="bracket-accordion">
+          {sortedRegions.map(([region, picksByRound]) => {
             const isCenter = region === 'center';
-            
-            // Hide region if a specific region is selected and this isn't it
-            // Always show center region, or show it when no region is selected
-            const shouldShow = selectedRegion === null 
-              ? true 
-              : selectedRegion === region;
-            
-            if (!shouldShow) return null;
+            const isExpanded = expandedRegions.has(region);
+            const regionTitle = isCenter ? 'Final Four' : `${region} Region`;
             
             return (
-              <div key={region} className={`bracket-region bracket-region-${position}`}>
-                {isCenter ? (
-                  <h3 className="region-title">Semis and Finals</h3>
-                ) : (
-                  <h3 className="region-title">{region} Region</h3>
-                )}
-                {Object.entries(picksByRound)
-                  .sort(([a], [b]) => Number(a) - Number(b))
-                  .map(([round, picks]) => (
-                    <div key={round} className={`round-container round-${round} ${isCenter ? 'round-center' : ''}`}>
-                      {isCenter && (
-                        <h3 className="round-title">
-                          {Number(round) === 5 ? 'Final Four' : Number(round) === 6 ? 'Championship' : `Round ${round}`}
-                        </h3>
-                      )}
-                      <div className={`games-list ${isCenter ? 'games-center' : ''}`}>
-                        {picks.map((pick) => {
-                          const game = pick.game;
-                          const predicted = pick.predictedWinner;
-                          // const actual = game?.winner;
-                          // const isCorrect = actual && predicted?.id === actual.id;
-                          const { team1, team2 } = getTeamsForGame(game, bracket.picks || []);
-                          
-                          return (
-                            <div key={pick.id} className="game-card">
-                              <div className="pick-info">
-                                <div className={game?.winnerId === team1?.id ? "team winner" 
-                                  : predicted?.id === team1?.id ? "team predicted" : "team"}>
-                                  <span className="seed-container">
-                                    {team1?.seed}
-                                  </span>
-                                  <span className="logo-container">
-                                    <img src={team1?.logoUrl} alt={team1?.name} className="team-logo" />
-                                  </span>
-                                  <span className="name-container">
-                                    {team1 ? `${team1?.name}` : 'TBD'}
-                                  </span>
-                                  <span className="team-score">
-                                    {game?.scoreTeam1 || 0}
-                                  </span>
-                                </div>
-                                <div className={game?.winnerId === team2?.id ? "team winner" 
-                                  : predicted?.id === team2?.id ? "team predicted" : "team"}>
-                                  <span className="seed-container">
-                                    {team2?.seed}
-                                  </span>
-                                  <span className="logo-container">
-                                    <img src={team2?.logoUrl} alt={team2?.name} className="team-logo" />
-                                  </span>
-                                  <span className="name-container">
-                                    {team2 ? `${team2?.name}` : 'TBD'}
-                                  </span>
-                                  <span className="team-score">
-                                    {game?.scoreTeam2 || 0}
-                                  </span>
-                                </div>
-                              </div>
-                              {/* <div className="prediction">
-                                <strong>Your Pick:</strong> {predicted?.name || 'None'}
-                                {actual && (
-                                  <span className={isCorrect ? 'correct' : 'incorrect'}>
-                                    {isCorrect ? ' ✓' : ' ✗'}
-                                  </span>
-                                )}
-                              </div> */}
-                              {(pick.pointsEarned ?? 0) > 0 && (
-                                <div className="points">+{pick.pointsEarned} points</div>
-                              )}
+              <div key={region} className="accordion-item">
+                <button
+                  className="accordion-header"
+                  onClick={() => toggleRegion(region)}
+                >
+                  <span className={`accordion-arrow ${isExpanded ? 'expanded' : ''}`}>
+                    →
+                  </span>
+                  <span className="accordion-title">{regionTitle}</span>
+                </button>
+                {isExpanded && (
+                  <div className="accordion-content">
+                    <div className="bracket-region">
+                      {Object.entries(picksByRound)
+                        .sort(([a], [b]) => Number(a) - Number(b))
+                        .map(([round, picks]) => (
+                          <div key={round} className={`round-container round-${round} ${isCenter ? 'round-center' : ''}`}>
+                            {isCenter && (
+                              <h3 className="round-title">
+                                {Number(round) === 5 ? 'Final Four' : Number(round) === 6 ? 'Championship' : `Round ${round}`}
+                              </h3>
+                            )}
+                            <div className={`games-list ${isCenter ? 'games-center' : ''}`}>
+                              {picks.map((pick) => {
+                                const game = pick.game;
+                                const predicted = pick.predictedWinner;
+                                const { team1, team2 } = getTeamsForGame(game, bracket.picks || []);
+                                
+                                return (
+                                  <div key={pick.id} className="game-card">
+                                    <div className="pick-info">
+                                      <div className={game?.winnerId === team1?.id ? "team winner" 
+                                        : predicted?.id === team1?.id ? "team predicted" : "team"}>
+                                        <span className="seed-container">
+                                          {team1?.seed}
+                                        </span>
+                                        <span className="logo-container">
+                                          <img src={team1?.logoUrl} alt={team1?.name} className="team-logo" />
+                                        </span>
+                                        <span className="name-container">
+                                          {team1 ? `${team1?.name}` : 'TBD'}
+                                        </span>
+                                        <span className="team-score">
+                                          {game?.scoreTeam1 || 0}
+                                        </span>
+                                      </div>
+                                      <div className={game?.winnerId === team2?.id ? "team winner" 
+                                        : predicted?.id === team2?.id ? "team predicted" : "team"}>
+                                        <span className="seed-container">
+                                          {team2?.seed}
+                                        </span>
+                                        <span className="logo-container">
+                                          <img src={team2?.logoUrl} alt={team2?.name} className="team-logo" />
+                                        </span>
+                                        <span className="name-container">
+                                          {team2 ? `${team2?.name}` : 'TBD'}
+                                        </span>
+                                        <span className="team-score">
+                                          {game?.scoreTeam2 || 0}
+                                        </span>
+                                      </div>
+                                    </div>
+                                    {(pick.pointsEarned ?? 0) > 0 && (
+                                      <div className="points">+{pick.pointsEarned} points</div>
+                                    )}
+                                  </div>
+                                );
+                              })}
                             </div>
-                          );
-                        })}
-                      </div>
+                          </div>
+                        ))}
                     </div>
-                  ))}
+                  </div>
+                )}
               </div>
             );
           })}
