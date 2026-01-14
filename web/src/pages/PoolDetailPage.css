@@ -49,11 +49,13 @@
 }
 
 .bracket-link {
-  padding: 0.75rem;
+  padding: 0.25rem;
   background: #f5f5f5;
   border-radius: 4px;
   text-decoration: none;
   color: inherit;
+  display: block;
+  width: 100%;
 }
 
 .bracket-link:hover {
