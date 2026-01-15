@@ -448,8 +448,8 @@ const CreateBracketPage = () => {
                                       game.status === 'in_progress' ||
                                       game.status === 'completed' ||
                                       (game.gameDate && new Date(game.gameDate) <= now);
-                                    const isDisabled = gameStarted;
-
+                                    const isDisabled: boolean = gameStarted as boolean;
+                                    
                                     return (
                                       <div key={game.id} className="game-card">
                                         <div className="pick-info">
