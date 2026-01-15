@@ -295,9 +295,54 @@ const CreateBracketPage = () => {
 
   
   const handlePick = (gameId: string, teamId: string) => {
-    // setPicks({ ...picks, [gameId]: teamId });
     setPicks((prev) => {
       const newPicks = { ...prev, [gameId]: teamId };
+      
+      // Helper function to get available teams for a game given a picks state
+      const getAvailableTeamsForPicks = (game: Game, picksState: { [gameId: string]: string }) => {
+        if (game.round === 1) {
+          return { team1: game.team1, team2: game.team2 };
+        }
+  
+        let team1: Game['team1'] = null;
+        let team2: Game['team2'] = null;
+  
+        if (game.parentGame1Id) {
+          const parent1Pick = picksState[game.parentGame1Id];
+          if (parent1Pick) {
+            const parent1Game = games.find((g) => g.id === game.parentGame1Id);
+            if (parent1Game) {
+              if (parent1Game.team1?.id === parent1Pick) {
+                team1 = parent1Game.team1;
+              } else if (parent1Game.team2?.id === parent1Pick) {
+                team1 = parent1Game.team2;
+              } else {
+                const allTeams = games.flatMap((g) => [g.team1, g.team2]).filter(Boolean) as Array<NonNullable<Game['team1']>>;
+                team1 = allTeams.find((t) => t?.id === parent1Pick) || null;
+              }
+            }
+          }
+        }
+  
+        if (game.parentGame2Id) {
+          const parent2Pick = picksState[game.parentGame2Id];
+          if (parent2Pick) {
+            const parent2Game = games.find((g) => g.id === game.parentGame2Id);
+            if (parent2Game) {
+              if (parent2Game.team1?.id === parent2Pick) {
+                team2 = parent2Game.team1;
+              } else if (parent2Game.team2?.id === parent2Pick) {
+                team2 = parent2Game.team2;
+              } else {
+                const allTeams = games.flatMap((g) => [g.team1, g.team2]).filter(Boolean) as Array<NonNullable<Game['team1']>>;
+                team2 = allTeams.find((t) => t?.id === parent2Pick) || null;
+              }
+            }
+          }
+        }
+  
+        return { team1, team2 };
+      };
       
       // Auto-populate dependent games
       const game = games.find((g) => g.id === gameId);
@@ -306,19 +351,34 @@ const CreateBracketPage = () => {
         const dependentGames = games.filter(
           (g) => g.parentGame1Id === gameId || g.parentGame2Id === gameId,
         );
-
+  
         dependentGames.forEach((dependentGame) => {
-          // Clear dependent picks when parent changes
-          if (dependentGame.parentGame1Id === gameId || dependentGame.parentGame2Id === gameId) {
-            delete newPicks[dependentGame.id];
+          // Get the current pick for this dependent game (before the change)
+          const currentPick = prev[dependentGame.id];
+          
+          if (currentPick) {
+            // Calculate what teams will be available after this change
+            const { team1, team2 } = getAvailableTeamsForPicks(dependentGame, newPicks);
             
-            // Recursively clear further dependent picks
-            const furtherDependent = games.filter(
-              (g) => g.parentGame1Id === dependentGame.id || g.parentGame2Id === dependentGame.id,
-            );
-            furtherDependent.forEach((fd) => {
-              delete newPicks[fd.id];
-            });
+            // Check if the current pick is still valid (still one of the available teams)
+            const isPickStillValid = currentPick === team1?.id || currentPick === team2?.id;
+            
+            // Only clear the pick if it's no longer valid
+            if (!isPickStillValid) {
+              delete newPicks[dependentGame.id];
+              
+              // Recursively clear further dependent picks only if we cleared this one
+              const furtherDependent = games.filter(
+                (g) => g.parentGame1Id === dependentGame.id || g.parentGame2Id === dependentGame.id,
+              );
+              furtherDependent.forEach((fd) => {
+                delete newPicks[fd.id];
+              });
+            }
+            // If the pick is still valid, keep it - don't clear it
+          } else {
+            // If there was no pick, we don't need to do anything
+            // (the dependent game will just show TBD for both teams)
           }
         });
       } 
@@ -441,6 +501,13 @@ const CreateBracketPage = () => {
                                   {roundGames.map((game) => {
                                     const { team1, team2 } = getAvailableTeams(game);
                                     const selectedTeamId = picks[game.id];
+
+                                    // Validate that the selected team is still available in this game
+                                    const isValidSelection = selectedTeamId && (
+                                      selectedTeamId === team1?.id || 
+                                      selectedTeamId === team2?.id
+                                    );
+                                    const displaySelectedTeamId = isValidSelection ? selectedTeamId : null;
                                     
                                     // Check if game has started or completed
                                     const now = new Date();
@@ -455,7 +522,7 @@ const CreateBracketPage = () => {
                                         <div className="pick-info">
                                           <button
                                             type="button"
-                                            className={`team-btn ${selectedTeamId === team1?.id ? 'selected' : ''} ${isDisabled ? 'disabled' : ''} ${!team1?.id ? 'tbd' : ''}`}
+                                            className={`team-btn ${displaySelectedTeamId === team1?.id ? 'selected' : ''} ${isDisabled ? 'disabled' : ''} ${!team1?.id ? 'tbd' : ''}`}
                                             onClick={() => {
                                               if (team1?.id && !isDisabled) {
                                                 handlePick(game.id, team1.id);
@@ -479,7 +546,7 @@ const CreateBracketPage = () => {
                                           </button>
                                           <button
                                             type="button"
-                                            className={`team-btn ${selectedTeamId === team2?.id ? 'selected' : ''} ${isDisabled ? 'disabled' : ''} ${!team2?.id ? 'tbd' : ''}`}
+                                            className={`team-btn ${displaySelectedTeamId === team2?.id ? 'selected' : ''} ${isDisabled ? 'disabled' : ''} ${!team2?.id ? 'tbd' : ''}`}
                                             onClick={() => {
                                               if (team2?.id && !isDisabled) {
                                                 handlePick(game.id, team2.id);
