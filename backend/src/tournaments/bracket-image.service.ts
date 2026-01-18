@@ -2,6 +2,8 @@ import { Injectable } from '@nestjs/common';
 import { GamesService } from '../games/games.service';
 import { TournamentsService } from './tournaments.service';
 import sharp from 'sharp';
+import * as https from 'https';
+import * as http from 'http';
 
 interface Game {
   id: string;
@@ -51,8 +53,11 @@ export class BracketImageService {
     // Sort games by round and game number
     const sortedGames = games.sort((a, b) => a.round - b.round || a.gameNumber - b.gameNumber);
 
-    // Generate SVG for the bracket
-    const svg = this.generateBracketSVG(tournament, sortedGames);
+    // Collect all unique logo URLs and convert them to base64 data URLs
+    const logoDataUrls = await this.convertLogosToDataUrls(sortedGames);
+
+    // Generate SVG for the bracket with base64 embedded logos
+    const svg = this.generateBracketSVG(tournament, sortedGames, logoDataUrls);
 
     // Convert SVG to PNG using sharp (much faster than Puppeteer)
     const pngBuffer = await sharp(Buffer.from(svg))
@@ -60,6 +65,76 @@ export class BracketImageService {
       .toBuffer();
 
     return pngBuffer;
+  }
+
+  /**
+   * Fetches logo images and converts them to base64 data URLs
+   * @param games - Array of games with team data
+   * @returns Map of logo URL to base64 data URL
+   */
+  private async convertLogosToDataUrls(games: Game[]): Promise<Map<string, string>> {
+    const logoUrls = new Set<string>();
+    const logoDataUrls = new Map<string, string>();
+
+    // Collect all unique logo URLs from teams
+    games.forEach((game) => {
+      if (game.team1 && 'logoUrl' in game.team1 && (game.team1 as any).logoUrl) {
+        logoUrls.add((game.team1 as any).logoUrl);
+      }
+      if (game.team2 && 'logoUrl' in game.team2 && (game.team2 as any).logoUrl) {
+        logoUrls.add((game.team2 as any).logoUrl);
+      }
+      if (game.winner && 'logoUrl' in game.winner && (game.winner as any).logoUrl) {
+        logoUrls.add((game.winner as any).logoUrl);
+      }
+    });
+
+    // Fetch and convert each logo URL to base64
+    const fetchPromises = Array.from(logoUrls).map(async (url) => {
+      try {
+        const dataUrl = await this.fetchImageAsDataUrl(url);
+        if (dataUrl) {
+          logoDataUrls.set(url, dataUrl);
+        }
+      } catch (error) {
+        console.warn(`Failed to fetch logo from ${url}:`, error);
+        // Continue without this logo - it will just not appear
+      }
+    });
+
+    await Promise.all(fetchPromises);
+
+    return logoDataUrls;
+  }
+
+  /**
+   * Fetches an image from a URL and converts it to a base64 data URL
+   * @param url - Image URL
+   * @returns Base64 data URL or null if fetch fails
+   */
+  private async fetchImageAsDataUrl(url: string): Promise<string | null> {
+    return new Promise((resolve, reject) => {
+      const client = url.startsWith('https') ? https : http;
+      
+      client.get(url, (response) => {
+        if (response.statusCode !== 200) {
+          reject(new Error(`Failed to fetch image: ${response.statusCode}`));
+          return;
+        }
+
+        const chunks: Buffer[] = [];
+        response.on('data', (chunk) => chunks.push(chunk));
+        response.on('end', () => {
+          const buffer = Buffer.concat(chunks);
+          const contentType = response.headers['content-type'] || 'image/png';
+          const base64 = buffer.toString('base64');
+          const dataUrl = `data:${contentType};base64,${base64}`;
+          resolve(dataUrl);
+        });
+      }).on('error', (error) => {
+        reject(error);
+      });
+    });
   }
 
   private getTeamsForGame(game: Game, allGames: Game[]): { team1: any; team2: any } {
@@ -356,7 +431,7 @@ export class BracketImageService {
       .replace(/'/g, '&apos;');
   }
 
-  private generateBracketSVG(tournament: Tournament, games: Game[]): string {
+  private generateBracketSVG(tournament: Tournament, games: Game[], logoDataUrls?: Map<string, string>): string {
     const width = 2400;
     const height = 1600;
     const padding = 40;
@@ -450,6 +525,18 @@ export class BracketImageService {
       const team2Fill = isTeam2Winner ? '#e8f5e9' : 'white';
       const fontWeight = (isTeam1Winner || isTeam2Winner) ? 'bold' : 'normal';
 
+      // Logo dimensions
+      const logoSize = pos.round === 6 ? 16 : 12;
+      const logoSpacing = logoSize + 5;
+      const textStartX = 5 + logoSpacing; // Start text after logo space
+
+      // Get logo URLs and convert to data URLs if available
+      const logo1Url = team1 && 'logoUrl' in team1 ? (team1 as any).logoUrl : null;
+      const logo2Url = team2 && 'logoUrl' in team2 ? (team2 as any).logoUrl : null;
+      const logo1DataUrl = logo1Url && logoDataUrls ? logoDataUrls.get(logo1Url) : null;
+      const logo2DataUrl = logo2Url && logoDataUrls ? logoDataUrls.get(logo2Url) : null;
+
+      // Build content with logo positioning
       let team1Content = '';
       if (seed1) {
         team1Content += `<tspan font-weight="bold" fill="#666">${seed1}</tspan><tspan dx="5"> </tspan>`;
@@ -468,6 +555,14 @@ export class BracketImageService {
         team2Content += `<tspan dx="10"> </tspan><tspan font-weight="bold">${score2}</tspan>`;
       }
 
+      // Logo images (only show if logo data URL exists - base64 embedded)
+      const logo1Image = logo1DataUrl 
+        ? `<image href="${this.escapeXml(logo1DataUrl)}" x="5" y="${(gameBoxHeight / 2 - logoSize) / 2}" width="${logoSize}" height="${logoSize}" preserveAspectRatio="xMidYMid meet"/>`
+        : '';
+      const logo2Image = logo2DataUrl 
+        ? `<image href="${this.escapeXml(logo2DataUrl)}" x="5" y="${gameBoxHeight / 2 + (gameBoxHeight / 2 - logoSize) / 2}" width="${logoSize}" height="${logoSize}" preserveAspectRatio="xMidYMid meet"/>`
+        : '';
+
       return `
         <g transform="translate(${gameX},${gameY})">
           <rect x="0" y="0" width="${gameBoxWidth}" height="${gameBoxHeight}" 
@@ -478,11 +573,13 @@ export class BracketImageService {
                 fill="${team2Fill}"/>
           <line x1="0" y1="${gameBoxHeight / 2}" x2="${gameBoxWidth}" y2="${gameBoxHeight / 2}" stroke="#ddd" stroke-width="1"/>
           
-          <text x="5" y="${lineHeight}" font-size="${fontSize}" font-family="Arial" fill="#333" font-weight="${team1 && isTeam1Winner ? 'bold' : 'normal'}">
+          ${logo1Image}
+          <text x="${textStartX}" y="${lineHeight}" font-size="${fontSize}" font-family="Arial" fill="#333" font-weight="${team1 && isTeam1Winner ? 'bold' : 'normal'}">
             ${team1Content}
           </text>
           
-          <text x="5" y="${gameBoxHeight / 2 + lineHeight}" font-size="${fontSize}" font-family="Arial" fill="#333" font-weight="${team2 && isTeam2Winner ? 'bold' : 'normal'}">
+          ${logo2Image}
+          <text x="${textStartX}" y="${gameBoxHeight / 2 + lineHeight}" font-size="${fontSize}" font-family="Arial" fill="#333" font-weight="${team2 && isTeam2Winner ? 'bold' : 'normal'}">
             ${team2Content}
           </text>
         </g>
