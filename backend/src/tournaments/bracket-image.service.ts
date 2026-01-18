@@ -156,9 +156,20 @@ export class BracketImageService {
 
       const layout = regionLayout[region as keyof typeof regionLayout];
       const rounds = [1, 2, 3, 4];
-      const roundWidth = layout.width / 4.5; // Slightly less than 4 to account for spacing
       const isRightSide = rightSideRegions.includes(region);
-      const maxGamesInRound1 = 8;
+      
+      // Game box dimensions
+      const gameBoxWidth = 180;
+      const gameBoxHalfWidth = gameBoxWidth / 2;
+      
+      // Calculate round positions with proper spacing to prevent overlap
+      // We need space for game boxes (180px) plus padding between rounds (40px)
+      const minSpacing = gameBoxWidth + 40;
+      const availableWidth = layout.width - gameBoxWidth; // Leave space for first/last round boxes
+      const roundSpacing = availableWidth / 3; // Space between round centers (3 gaps for 4 rounds)
+      
+      // Ensure minimum spacing between rounds
+      const actualRoundSpacing = Math.max(roundSpacing, minSpacing);
 
       rounds.forEach((round, roundIdx) => {
         const roundGames = regionGames[round]?.sort((a, b) => a.gameNumber - b.gameNumber) || [];
@@ -167,14 +178,19 @@ export class BracketImageService {
           let x: number;
           if (isRightSide) {
             // Right side: round 1 on far right, progress left
-            // Round 1 (roundIdx=0): x = startX + width - 0.45*roundWidth (far right)
-            // Round 2 (roundIdx=1): x = startX + width - 1.45*roundWidth (left of round 1)
-            // Round 3 (roundIdx=2): x = startX + width - 2.45*roundWidth (left of round 2)
-            // Round 4 (roundIdx=3): x = startX + width - 3.45*roundWidth (left of round 3, closest to center)
-            x = layout.startX + layout.width - (roundIdx * roundWidth) - (roundWidth * 0.45);
+            // Round 1 (roundIdx=0): far right
+            // Round 2 (roundIdx=1): left of round 1 by actualRoundSpacing
+            // Round 3 (roundIdx=2): left of round 2 by actualRoundSpacing
+            // Round 4 (roundIdx=3): left of round 3 by actualRoundSpacing, closest to center
+            const roundsFromRight = roundIdx;
+            x = layout.startX + layout.width - gameBoxHalfWidth - (roundsFromRight * actualRoundSpacing);
           } else {
             // Left side: round 1 on far left, progress right
-            x = layout.startX + (roundIdx * roundWidth) + (roundWidth * 0.45);
+            // Round 1 (roundIdx=0): far left
+            // Round 2 (roundIdx=1): right of round 1 by actualRoundSpacing
+            // Round 3 (roundIdx=2): right of round 2 by actualRoundSpacing
+            // Round 4 (roundIdx=3): right of round 3 by actualRoundSpacing, closest to center
+            x = layout.startX + gameBoxHalfWidth + (roundIdx * actualRoundSpacing);
           }
           
           const y = layout.startY + calculateGameY(round, gameIdx, roundGames.length);
