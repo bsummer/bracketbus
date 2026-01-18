@@ -1,8 +1,10 @@
-import { Controller, Get, Post, Put, Delete, Param, Body } from '@nestjs/common';
+import { Controller, Get, Post, Put, Delete, Param, Body, Res } from '@nestjs/common';
+import { Response } from 'express';
 import { TournamentsService } from './tournaments.service';
 import { CreateTournamentDto } from './dto/create-tournament.dto';
 import { UpdateTournamentDto } from './dto/update-tournament.dto';
 import { Admin } from '../common/decorators/admin.decorator';
+import { BracketImageService } from './bracket-image.service';
 
 /**
  * Controller for tournament management endpoints.
@@ -12,7 +14,10 @@ import { Admin } from '../common/decorators/admin.decorator';
  */
 @Controller('tournaments')
 export class TournamentsController {
-  constructor(private readonly tournamentsService: TournamentsService) {}
+  constructor(
+    private readonly tournamentsService: TournamentsService,
+    private readonly bracketImageService: BracketImageService,
+  ) {}
 
   /**
    * GET /api/tournaments
@@ -72,6 +77,35 @@ export class TournamentsController {
   async remove(@Param('id') id: string) {
     await this.tournamentsService.remove(id);
     return { message: 'Tournament deleted successfully' };
+  }
+
+  /**
+   * GET /api/tournaments/:id/bracket-image
+   * Generates and downloads a bracket image with traditional layout (public).
+   * @param id - Tournament UUID
+   * @param res - Express response object
+   */
+  @Get(':id/bracket-image')
+  async generateBracketImage(@Param('id') id: string, @Res() res: Response) {
+    try {
+      const imageBuffer = await this.bracketImageService.generateTournamentBracketImage(id);
+      const tournament = await this.tournamentsService.findOne(id);
+      const fileName = `${tournament.name.replace(/\s+/g, '_')}_Bracket.png`;
+
+      res.set({
+        'Content-Type': 'image/png',
+        'Content-Disposition': `attachment; filename="${fileName}"`,
+        'Content-Length': imageBuffer.length,
+      });
+
+      res.send(imageBuffer);
+    } catch (error) {
+      console.error('Bracket image generation error:', error);
+      res.status(500).json({
+        message: 'Failed to generate bracket image',
+        error: error instanceof Error ? error.message : 'Unknown error',
+      });
+    }
   }
 }
 
