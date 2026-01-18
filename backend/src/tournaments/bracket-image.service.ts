@@ -167,8 +167,11 @@ export class BracketImageService {
           let x: number;
           if (isRightSide) {
             // Right side: round 1 on far right, progress left
-            const reverseRoundIdx = 3 - roundIdx;
-            x = layout.startX + layout.width - (reverseRoundIdx * roundWidth) - (roundWidth * 0.45);
+            // Round 1 (roundIdx=0): x = startX + width - 0.45*roundWidth (far right)
+            // Round 2 (roundIdx=1): x = startX + width - 1.45*roundWidth (left of round 1)
+            // Round 3 (roundIdx=2): x = startX + width - 2.45*roundWidth (left of round 2)
+            // Round 4 (roundIdx=3): x = startX + width - 3.45*roundWidth (left of round 3, closest to center)
+            x = layout.startX + layout.width - (roundIdx * roundWidth) - (roundWidth * 0.45);
           } else {
             // Left side: round 1 on far left, progress right
             x = layout.startX + (roundIdx * roundWidth) + (roundWidth * 0.45);
