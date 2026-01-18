@@ -114,17 +114,19 @@ export class BracketImageService {
     const padding = 40;
     
     // Calculate region dimensions - regions take outer portions, center takes middle
+    // Increased center width and moved right regions further right to give more space for Final Four
     const leftRegionWidth = 550;
-    const centerWidth = 700;
+    const centerWidth = 800; // Increased from 700 to give more space for Final Four games
     const rightRegionWidth = 550;
+    const rightRegionOffset = 100; // Additional space to push right regions further right
     const regionHeight = (height - padding * 2) / 2;
 
     // Region positions matching traditional bracket layout
     const regionLayout = {
       East: { startX: padding, startY: padding + 80, width: leftRegionWidth, height: regionHeight - 80 },
       West: { startX: padding, startY: padding + regionHeight + 80, width: leftRegionWidth, height: regionHeight - 80 },
-      South: { startX: padding + leftRegionWidth + centerWidth, startY: padding + 80, width: rightRegionWidth, height: regionHeight - 80 },
-      Midwest: { startX: padding + leftRegionWidth + centerWidth, startY: padding + regionHeight + 80, width: rightRegionWidth, height: regionHeight - 80 },
+      South: { startX: padding + leftRegionWidth + centerWidth + rightRegionOffset, startY: padding + 80, width: rightRegionWidth, height: regionHeight - 80 },
+      Midwest: { startX: padding + leftRegionWidth + centerWidth + rightRegionOffset, startY: padding + regionHeight + 80, width: rightRegionWidth, height: regionHeight - 80 },
     };
 
     const regionOrder = ['East', 'West', 'South', 'Midwest'];
@@ -227,20 +229,118 @@ export class BracketImageService {
     const centerGames = gamesByRegionAndRound['center'];
     if (centerGames) {
       const centerX = padding + leftRegionWidth + (centerWidth / 2);
-      const centerTop = height / 2 - 150;
-      const centerBottom = height / 2 + 150;
+      const leftSideRegions = ['East', 'West'];
+      const rightSideRegions = ['South', 'Midwest'];
 
-      // Final Four (Round 5) - two games vertically stacked
+      // Final Four (Round 5) - position based on parent games
       const round5Games = centerGames[5]?.sort((a, b) => a.gameNumber - b.gameNumber) || [];
-      round5Games.forEach((game, idx) => {
-        const y = centerTop + (idx * 200);
-        positions.push({ game, x: centerX, y, round: 5, region: 'center' });
+      
+      // Separate Final Four games by which side their parents come from
+      const leftFinalFourGames: Game[] = [];
+      const rightFinalFourGames: Game[] = [];
+      
+      round5Games.forEach((game) => {
+        if (!game.parentGame1Id || !game.parentGame2Id) {
+          // Fallback: use first game for left, second for right
+          if (round5Games.indexOf(game) === 0) {
+            leftFinalFourGames.push(game);
+          } else {
+            rightFinalFourGames.push(game);
+          }
+          return;
+        }
+        
+        // Find parent games to determine which side this Final Four game comes from
+        const parent1 = games.find(g => g.id === game.parentGame1Id);
+        const parent2 = games.find(g => g.id === game.parentGame2Id);
+        
+        // Check if parents are from left side (East, West) or right side (South, Midwest)
+        const parent1FromLeft = parent1 && parent1.region && leftSideRegions.includes(parent1.region);
+        const parent2FromLeft = parent2 && parent2.region && leftSideRegions.includes(parent2.region);
+        
+        // If both parents are from left side, this is the left Final Four game
+        // Otherwise, it's the right Final Four game (parents from right side)
+        if (parent1FromLeft && parent2FromLeft) {
+          leftFinalFourGames.push(game);
+        } else {
+          rightFinalFourGames.push(game);
+        }
+      });
+      
+      // Position Final Four games aligned vertically with horizontal spacing
+      // Final Four game boxes are 180px wide, so we need at least 180px + padding between centers
+      // Using 220px spacing (110px on each side of center) to prevent overlap with some breathing room
+      const finalFourHorizontalSpacing = 220;
+      
+      // Calculate the vertical center point for both Final Four games
+      // Find the average Y position of all Round 4 games (parents of Final Four)
+      let finalFourY: number;
+      
+      if (round5Games.length > 0) {
+        const parentYs: number[] = [];
+        
+        round5Games.forEach((game) => {
+          if (game.parentGame1Id && game.parentGame2Id) {
+            const parent1Pos = positions.find(p => p.game.id === game.parentGame1Id);
+            const parent2Pos = positions.find(p => p.game.id === game.parentGame2Id);
+            
+            if (parent1Pos && parent2Pos) {
+              // Add the midpoint between each pair of parents
+              parentYs.push((parent1Pos.y + parent2Pos.y) / 2);
+            }
+          }
+        });
+        
+        if (parentYs.length > 0) {
+          // Use the average Y of all parent midpoints
+          finalFourY = parentYs.reduce((sum, y) => sum + y, 0) / parentYs.length;
+        } else {
+          // Fallback: center vertically
+          finalFourY = height / 2;
+        }
+      } else {
+        // Fallback: center vertically
+        finalFourY = height / 2;
+      }
+      
+      // Position both Final Four games at the same Y coordinate with horizontal spacing
+      round5Games.forEach((game) => {
+        const isLeftFinalFour = leftFinalFourGames.includes(game);
+        const x = isLeftFinalFour 
+          ? centerX - finalFourHorizontalSpacing / 2 
+          : centerX + finalFourHorizontalSpacing / 2;
+        
+        positions.push({ game, x, y: finalFourY, round: 5, region: 'center' });
       });
 
-      // Championship (Round 6) - single game in center
+      // Championship (Round 6) - position below and horizontally centered between Final Four games
       const round6Games = centerGames[6] || [];
       round6Games.forEach((game) => {
-        positions.push({ game, x: centerX, y: centerBottom, round: 6, region: 'center' });
+        // Championship is horizontally centered between the two Final Four games
+        const x = centerX;
+        let y: number;
+        
+        if (game.parentGame1Id && game.parentGame2Id) {
+          // Find parent Final Four game positions
+          const parent1Pos = positions.find(p => p.game.id === game.parentGame1Id);
+          const parent2Pos = positions.find(p => p.game.id === game.parentGame2Id);
+          
+          if (parent1Pos && parent2Pos) {
+            // Position below the Final Four games (lower Y value = further down)
+            // Calculate vertical spacing: find the lower Y of the two Final Four games and add spacing
+            const lowerY = Math.max(parent1Pos.y, parent2Pos.y);
+            const championshipVerticalSpacing = 150; // Space between Final Four and Championship
+            y = lowerY + championshipVerticalSpacing;
+          } else {
+            // Fallback: position below center
+            y = height / 2 + 200;
+          }
+        } else {
+          // Fallback: position below center
+          y = height / 2 + 200;
+        }
+        
+        positions.push({ game, x, y, round: 6, region: 'center' });
       });
     }
 
@@ -261,8 +361,9 @@ export class BracketImageService {
     const height = 1600;
     const padding = 40;
     const leftRegionWidth = 550;
-    const centerWidth = 700;
+    const centerWidth = 800; // Increased from 700 to give more space for Final Four games
     const rightRegionWidth = 550;
+    const rightRegionOffset = 100; // Additional space to push right regions further right
     const regionHeight = (height - padding * 2) / 2;
     
     const positions = this.calculateGamePositions(games);
@@ -301,8 +402,49 @@ export class BracketImageService {
       const fontSize = pos.round === 6 ? 14 : 11;
       const lineHeight = pos.round === 6 ? 18 : 13;
 
-      const team1Text = team1 ? this.escapeXml(team1.name) : 'TBD';
-      const team2Text = team2 ? this.escapeXml(team2.name) : 'TBD';
+      // For Final Four games (Round 5), show region champion labels instead of TBD
+      let team1Text: string;
+      let team2Text: string;
+      
+      if (pos.round === 5) {
+        // Final Four game - show region champion labels for TBD teams
+        const regionMap: Record<string, string> = {
+          'East': 'North',
+          'West': 'West',
+          'South': 'East',
+          'Midwest': 'Midwest',
+        };
+        
+        // Find parent games to determine regions
+        let team1Region: string | null = null;
+        let team2Region: string | null = null;
+        
+        if (pos.game.parentGame1Id) {
+          const parent1 = games.find(g => g.id === pos.game.parentGame1Id);
+          if (parent1?.region) {
+            team1Region = parent1.region;
+          }
+        }
+        
+        if (pos.game.parentGame2Id) {
+          const parent2 = games.find(g => g.id === pos.game.parentGame2Id);
+          if (parent2?.region) {
+            team2Region = parent2.region;
+          }
+        }
+        
+        // Use team name if selected, otherwise show region champion label
+        team1Text = team1 
+          ? this.escapeXml(team1.name) 
+          : (team1Region ? `${regionMap[team1Region] || team1Region} Champion` : 'TBD');
+        team2Text = team2 
+          ? this.escapeXml(team2.name) 
+          : (team2Region ? `${regionMap[team2Region] || team2Region} Champion` : 'TBD');
+      } else {
+        // Regular game - use team names or TBD
+        team1Text = team1 ? this.escapeXml(team1.name) : 'TBD';
+        team2Text = team2 ? this.escapeXml(team2.name) : 'TBD';
+      }
 
       const team1Fill = isTeam1Winner ? '#e8f5e9' : 'white';
       const team2Fill = isTeam2Winner ? '#e8f5e9' : 'white';
@@ -393,8 +535,33 @@ export class BracketImageService {
         const gameBoxW = pos.round === 6 ? 250 : gameBoxWidth;
         const gameBoxH = pos.round === 6 ? 80 : gameBoxHeight;
         
+        // Only draw lines from parent games to their direct children
+        // Round 4 games connect to Round 5 (Final Four)
+        // Round 5 games (Final Four) connect to Round 6 (Championship)
+        // Do not draw lines from Round 4 to Round 6
+        
         // Connect to child game (next round)
+        // Only draw lines from Round 5 (Final Four) to Round 6 (Championship)
+        // Skip lines from Round 4 to Round 5 (Final Four) - using region champion labels instead
         if (game.parentGame1Id || game.parentGame2Id) {
+          // Skip Round 4 → Round 5 connections
+          if (pos.round === 5) {
+            return; // Don't draw lines from Round 4 to Final Four
+          }
+          
+          // Verify parent-child relationship: parent must be exactly one round earlier
+          const parent1Round = game.parentGame1Id ? positions.find(p => p.game.id === game.parentGame1Id)?.round : null;
+          const parent2Round = game.parentGame2Id ? positions.find(p => p.game.id === game.parentGame2Id)?.round : null;
+          
+          // Check if parents are from the correct round (should be current round - 1)
+          const expectedParentRound = pos.round - 1;
+          const parent1Valid = !parent1Round || parent1Round === expectedParentRound;
+          const parent2Valid = !parent2Round || parent2Round === expectedParentRound;
+          
+          // Skip if parents are not from the correct round
+          if (!parent1Valid || !parent2Valid) {
+            return; // Skip this connection - parents are not from the correct round
+          }
           // This game is a child, find parent positions
           if (game.parentGame1Id) {
             const parent1Pos = positions.find(p => p.game.id === game.parentGame1Id);
@@ -503,8 +670,8 @@ export class BracketImageService {
     const regionTitleLayout = {
       East: { x: padding + leftRegionWidth / 2, y: padding + 60 },
       West: { x: padding + leftRegionWidth / 2, y: padding + regionHeight + 60 },
-      South: { x: padding + leftRegionWidth + centerWidth + rightRegionWidth / 2, y: padding + 60 },
-      Midwest: { x: padding + leftRegionWidth + centerWidth + rightRegionWidth / 2, y: padding + regionHeight + 60 },
+      South: { x: padding + leftRegionWidth + centerWidth + rightRegionOffset + rightRegionWidth / 2, y: padding + 60 },
+      Midwest: { x: padding + leftRegionWidth + centerWidth + rightRegionOffset + rightRegionWidth / 2, y: padding + regionHeight + 60 },
     };
 
     const updatedRegionTitles: string[] = [];
