@@ -108,22 +108,46 @@ export class BracketImageService {
       gamesByRegionAndRound[region][round].push(game);
     });
 
-    // SVG dimensions
+    // SVG dimensions - larger to match traditional bracket
     const width = 2400;
     const height = 1600;
-    const padding = 50;
-    const regionWidth = (width - padding * 2) / 3;
+    const padding = 40;
+    
+    // Calculate region dimensions - regions take outer portions, center takes middle
+    const leftRegionWidth = 550;
+    const centerWidth = 700;
+    const rightRegionWidth = 550;
     const regionHeight = (height - padding * 2) / 2;
 
-    // Region positions
+    // Region positions matching traditional bracket layout
     const regionLayout = {
-      East: { startX: padding, startY: padding, width: regionWidth, height: regionHeight },
-      West: { startX: padding, startY: padding + regionHeight, width: regionWidth, height: regionHeight },
-      South: { startX: padding + regionWidth * 2, startY: padding, width: regionWidth, height: regionHeight },
-      Midwest: { startX: padding + regionWidth * 2, startY: padding + regionHeight, width: regionWidth, height: regionHeight },
+      East: { startX: padding, startY: padding + 80, width: leftRegionWidth, height: regionHeight - 80 },
+      West: { startX: padding, startY: padding + regionHeight + 80, width: leftRegionWidth, height: regionHeight - 80 },
+      South: { startX: padding + leftRegionWidth + centerWidth, startY: padding + 80, width: rightRegionWidth, height: regionHeight - 80 },
+      Midwest: { startX: padding + leftRegionWidth + centerWidth, startY: padding + regionHeight + 80, width: rightRegionWidth, height: regionHeight - 80 },
     };
 
     const regionOrder = ['East', 'West', 'South', 'Midwest'];
+    const rightSideRegions = ['South', 'Midwest'];
+
+    // Helper to calculate game Y position based on bracket structure
+    const calculateGameY = (round: number, gameIdx: number, totalGames: number): number => {
+      // Round 1 has 8 games per region
+      // Each subsequent round halves the number of games
+      const gamesInRound1 = 8;
+      const gamesInThisRound = totalGames;
+      
+      // Calculate spacing - games get closer together as rounds progress
+      const baseSpacing = 70; // Base spacing between games in round 1
+      const spacing = baseSpacing / Math.pow(2, round - 1);
+      
+      // Calculate starting position to center games vertically
+      const totalHeight = (gamesInRound1 - 1) * baseSpacing;
+      const roundHeight = (gamesInThisRound - 1) * spacing;
+      const startY = (totalHeight - roundHeight) / 2;
+      
+      return startY + (gameIdx * spacing);
+    };
 
     // Position regional games (rounds 1-4)
     regionOrder.forEach((region) => {
@@ -132,15 +156,25 @@ export class BracketImageService {
 
       const layout = regionLayout[region as keyof typeof regionLayout];
       const rounds = [1, 2, 3, 4];
-      const roundWidth = layout.width / 4;
+      const roundWidth = layout.width / 4.5; // Slightly less than 4 to account for spacing
+      const isRightSide = rightSideRegions.includes(region);
+      const maxGamesInRound1 = 8;
 
       rounds.forEach((round, roundIdx) => {
         const roundGames = regionGames[round]?.sort((a, b) => a.gameNumber - b.gameNumber) || [];
-        const gameHeight = layout.height / Math.max(roundGames.length, 8);
         
         roundGames.forEach((game, gameIdx) => {
-          const x = layout.startX + (roundIdx * roundWidth) + (roundWidth / 2);
-          const y = layout.startY + (gameIdx * gameHeight) + (gameHeight / 2);
+          let x: number;
+          if (isRightSide) {
+            // Right side: round 1 on far right, progress left
+            const reverseRoundIdx = 3 - roundIdx;
+            x = layout.startX + layout.width - (reverseRoundIdx * roundWidth) - (roundWidth * 0.45);
+          } else {
+            // Left side: round 1 on far left, progress right
+            x = layout.startX + (roundIdx * roundWidth) + (roundWidth * 0.45);
+          }
+          
+          const y = layout.startY + calculateGameY(round, gameIdx, roundGames.length);
           positions.push({ game, x, y, round, region });
         });
       });
@@ -149,20 +183,21 @@ export class BracketImageService {
     // Position center games (Final Four and Championship)
     const centerGames = gamesByRegionAndRound['center'];
     if (centerGames) {
-      const centerX = padding + regionWidth;
-      const centerStartY = height / 2 - 200;
+      const centerX = padding + leftRegionWidth + (centerWidth / 2);
+      const centerTop = height / 2 - 150;
+      const centerBottom = height / 2 + 150;
 
-      // Final Four (Round 5)
+      // Final Four (Round 5) - two games vertically stacked
       const round5Games = centerGames[5]?.sort((a, b) => a.gameNumber - b.gameNumber) || [];
       round5Games.forEach((game, idx) => {
-        const y = centerStartY + (idx * 150);
+        const y = centerTop + (idx * 200);
         positions.push({ game, x: centerX, y, round: 5, region: 'center' });
       });
 
-      // Championship (Round 6)
+      // Championship (Round 6) - single game in center
       const round6Games = centerGames[6] || [];
       round6Games.forEach((game) => {
-        positions.push({ game, x: centerX, y: centerStartY + 300, round: 6, region: 'center' });
+        positions.push({ game, x: centerX, y: centerBottom, round: 6, region: 'center' });
       });
     }
 
@@ -181,6 +216,12 @@ export class BracketImageService {
   private generateBracketSVG(tournament: Tournament, games: Game[]): string {
     const width = 2400;
     const height = 1600;
+    const padding = 40;
+    const leftRegionWidth = 550;
+    const centerWidth = 700;
+    const rightRegionWidth = 550;
+    const regionHeight = (height - padding * 2) / 2;
+    
     const positions = this.calculateGamePositions(games);
 
     // Group positions by region for rendering
@@ -192,11 +233,12 @@ export class BracketImageService {
       positionsByRegion[pos.region].push(pos);
     });
 
+    // Map regions to display names (matching traditional bracket)
     const regionMap: Record<string, string> = {
-      'East': 'North',
-      'West': 'West',
-      'South': 'East',
-      'Midwest': 'Midwest',
+      'East': 'North',  // Top-left region shown as North
+      'West': 'West',   // Bottom-left region
+      'South': 'East',  // Top-right region shown as East
+      'Midwest': 'Midwest', // Bottom-right region
     };
 
     const renderGame = (pos: GamePosition): string => {
@@ -286,10 +328,149 @@ export class BracketImageService {
       }
     });
 
+    // Calculate center positions based on new layout
+    const centerX = padding + leftRegionWidth + (centerWidth / 2);
     const centerTitles = `
-      <text x="1200" y="600" font-size="24" font-weight="bold" font-family="Arial" fill="#333" text-anchor="middle">FINAL FOUR</text>
-      <text x="1200" y="1050" font-size="24" font-weight="bold" font-family="Arial" fill="#333" text-anchor="middle">CHAMPIONSHIP</text>
+      <text x="${centerX}" y="${height / 2 - 100}" font-size="24" font-weight="bold" font-family="Arial" fill="#333" text-anchor="middle">FINAL FOUR</text>
+      <text x="${centerX}" y="${height / 2 + 200}" font-size="24" font-weight="bold" font-family="Arial" fill="#333" text-anchor="middle">CHAMPIONSHIP</text>
     `;
+
+    // Render connecting lines between games
+    const renderConnectingLines = (): string => {
+      const lines: string[] = [];
+      const gameBoxWidth = 180;
+      const gameBoxHeight = 50;
+      const rightSideRegions = ['South', 'Midwest'];
+      const centerX = padding + leftRegionWidth + (centerWidth / 2);
+
+      positions.forEach((pos) => {
+        const game = pos.game;
+        const isRightSide = rightSideRegions.includes(pos.region);
+        const isCenter = pos.region === 'center';
+        const gameBoxW = pos.round === 6 ? 250 : gameBoxWidth;
+        const gameBoxH = pos.round === 6 ? 80 : gameBoxHeight;
+        
+        // Connect to child game (next round)
+        if (game.parentGame1Id || game.parentGame2Id) {
+          // This game is a child, find parent positions
+          if (game.parentGame1Id) {
+            const parent1Pos = positions.find(p => p.game.id === game.parentGame1Id);
+            if (parent1Pos) {
+              const parentBoxW = parent1Pos.round === 6 ? 250 : gameBoxWidth;
+              const parentBoxH = parent1Pos.round === 6 ? 80 : gameBoxHeight;
+              const parentIsRight = rightSideRegions.includes(parent1Pos.region);
+              const parentIsCenter = parent1Pos.region === 'center';
+              
+              // Calculate start point (parent game bottom)
+              let parentStartX: number;
+              let parentStartY = parent1Pos.y + parentBoxH / 2;
+              
+              if (parentIsRight) {
+                parentStartX = parent1Pos.x - parentBoxW / 2; // Left edge for right regions
+              } else if (parentIsCenter) {
+                parentStartX = parent1Pos.x; // Center for center games
+              } else {
+                parentStartX = parent1Pos.x + parentBoxW / 2; // Right edge for left regions
+              }
+              
+              // Calculate end point (child game top)
+              let childEndX: number;
+              let childEndY = pos.y - gameBoxH / 2;
+              
+              if (isRightSide) {
+                childEndX = pos.x + gameBoxW / 2; // Right edge for right regions
+              } else if (isCenter) {
+                childEndX = pos.x; // Center for center games
+              } else {
+                childEndX = pos.x - gameBoxW / 2; // Left edge for left regions
+              }
+              
+              // Draw connecting line with horizontal segment in middle
+              if (isCenter || parentIsCenter) {
+                // Vertical line for center games
+                const midY = (parentStartY + childEndY) / 2;
+                lines.push(`<path d="M ${parentStartX} ${parentStartY} L ${parentStartX} ${midY} L ${childEndX} ${midY} L ${childEndX} ${childEndY}" stroke="#999" stroke-width="2" fill="none"/>`);
+              } else if (isRightSide || parentIsRight) {
+                // Right side: horizontal line going left
+                const midX = Math.min(parentStartX, childEndX) - 60;
+                lines.push(`<path d="M ${parentStartX} ${parentStartY} L ${midX} ${parentStartY} L ${midX} ${childEndY} L ${childEndX} ${childEndY}" stroke="#999" stroke-width="2" fill="none"/>`);
+              } else {
+                // Left side: horizontal line going right
+                const midX = Math.max(parentStartX, childEndX) + 60;
+                lines.push(`<path d="M ${parentStartX} ${parentStartY} L ${midX} ${parentStartY} L ${midX} ${childEndY} L ${childEndX} ${childEndY}" stroke="#999" stroke-width="2" fill="none"/>`);
+              }
+            }
+          }
+          
+          if (game.parentGame2Id) {
+            const parent2Pos = positions.find(p => p.game.id === game.parentGame2Id);
+            if (parent2Pos) {
+              const parentBoxW = parent2Pos.round === 6 ? 250 : gameBoxWidth;
+              const parentBoxH = parent2Pos.round === 6 ? 80 : gameBoxHeight;
+              const parentIsRight = rightSideRegions.includes(parent2Pos.region);
+              const parentIsCenter = parent2Pos.region === 'center';
+              
+              // Calculate start point (parent game bottom)
+              let parentStartX: number;
+              let parentStartY = parent2Pos.y + parentBoxH / 2;
+              
+              if (parentIsRight) {
+                parentStartX = parent2Pos.x - parentBoxW / 2; // Left edge for right regions
+              } else if (parentIsCenter) {
+                parentStartX = parent2Pos.x; // Center for center games
+              } else {
+                parentStartX = parent2Pos.x + parentBoxW / 2; // Right edge for left regions
+              }
+              
+              // Calculate end point (child game top)
+              let childEndX: number;
+              let childEndY = pos.y - gameBoxH / 2;
+              
+              if (isRightSide) {
+                childEndX = pos.x + gameBoxW / 2; // Right edge for right regions
+              } else if (isCenter) {
+                childEndX = pos.x; // Center for center games
+              } else {
+                childEndX = pos.x - gameBoxW / 2; // Left edge for left regions
+              }
+              
+              // Draw connecting line with horizontal segment in middle
+              if (isCenter || parentIsCenter) {
+                // Vertical line for center games
+                const midY = (parentStartY + childEndY) / 2;
+                lines.push(`<path d="M ${parentStartX} ${parentStartY} L ${parentStartX} ${midY} L ${childEndX} ${midY} L ${childEndX} ${childEndY}" stroke="#999" stroke-width="2" fill="none"/>`);
+              } else if (isRightSide || parentIsRight) {
+                // Right side: horizontal line going left
+                const midX = Math.min(parentStartX, childEndX) - 60;
+                lines.push(`<path d="M ${parentStartX} ${parentStartY} L ${midX} ${parentStartY} L ${midX} ${childEndY} L ${childEndX} ${childEndY}" stroke="#999" stroke-width="2" fill="none"/>`);
+              } else {
+                // Left side: horizontal line going right
+                const midX = Math.max(parentStartX, childEndX) + 60;
+                lines.push(`<path d="M ${parentStartX} ${parentStartY} L ${midX} ${parentStartY} L ${midX} ${childEndY} L ${childEndX} ${childEndY}" stroke="#999" stroke-width="2" fill="none"/>`);
+              }
+            }
+          }
+        }
+      });
+
+      return lines.join('');
+    };
+
+    // Update region title positions based on new layout
+    const regionTitleLayout = {
+      East: { x: padding + leftRegionWidth / 2, y: padding + 60 },
+      West: { x: padding + leftRegionWidth / 2, y: padding + regionHeight + 60 },
+      South: { x: padding + leftRegionWidth + centerWidth + rightRegionWidth / 2, y: padding + 60 },
+      Midwest: { x: padding + leftRegionWidth + centerWidth + rightRegionWidth / 2, y: padding + regionHeight + 60 },
+    };
+
+    const updatedRegionTitles: string[] = [];
+    ['East', 'West', 'South', 'Midwest'].forEach((region) => {
+      if (positionsByRegion[region]) {
+        const layout = regionTitleLayout[region as keyof typeof regionTitleLayout];
+        updatedRegionTitles.push(renderRegionTitle(region, layout.x, layout.y));
+      }
+    });
 
     return `<?xml version="1.0" encoding="UTF-8"?>
       <svg width="${width}" height="${height}" xmlns="http://www.w3.org/2000/svg">
@@ -305,12 +486,12 @@ export class BracketImageService {
           ${this.escapeXml(tournament.name)}
         </text>
         
-        ${regionTitles.join('')}
+        ${updatedRegionTitles.join('')}
         ${centerTitles}
         
-        ${positions.map(renderGame).join('')}
+        ${renderConnectingLines()}
         
-        <!-- Connecting lines would go here for bracket visualization -->
+        ${positions.map(renderGame).join('')}
       </svg>
     `;
   }
