@@ -130,26 +130,21 @@ export class BracketImageService {
     const regionOrder = ['East', 'West', 'South', 'Midwest'];
     const rightSideRegions = ['South', 'Midwest'];
 
-    // Helper to calculate game Y position based on bracket structure
-    const calculateGameY = (round: number, gameIdx: number, totalGames: number): number => {
-      // Round 1 has 8 games per region
-      // Each subsequent round halves the number of games
+    // Helper to calculate game Y position based on bracket structure (for Round 1 only)
+    const calculateGameYRound1 = (gameIdx: number, totalGames: number): number => {
       const gamesInRound1 = 8;
-      const gamesInThisRound = totalGames;
-      
-      // Calculate spacing - games get closer together as rounds progress
       const baseSpacing = 70; // Base spacing between games in round 1
-      const spacing = baseSpacing / Math.pow(2, round - 1);
       
       // Calculate starting position to center games vertically
       const totalHeight = (gamesInRound1 - 1) * baseSpacing;
-      const roundHeight = (gamesInThisRound - 1) * spacing;
+      const roundHeight = (totalGames - 1) * baseSpacing;
       const startY = (totalHeight - roundHeight) / 2;
       
-      return startY + (gameIdx * spacing);
+      return startY + (gameIdx * baseSpacing);
     };
 
     // Position regional games (rounds 1-4)
+    // Must process rounds in order so we can calculate Y based on parent positions
     regionOrder.forEach((region) => {
       const regionGames = gamesByRegionAndRound[region];
       if (!regionGames) return;
@@ -171,6 +166,7 @@ export class BracketImageService {
       // Ensure minimum spacing between rounds
       const actualRoundSpacing = Math.max(roundSpacing, minSpacing);
 
+      // Process rounds in order - Round 1 first, then Round 2+, so we can use parent positions
       rounds.forEach((round, roundIdx) => {
         const roundGames = regionGames[round]?.sort((a, b) => a.gameNumber - b.gameNumber) || [];
         
@@ -178,22 +174,50 @@ export class BracketImageService {
           let x: number;
           if (isRightSide) {
             // Right side: round 1 on far right, progress left
-            // Round 1 (roundIdx=0): far right
-            // Round 2 (roundIdx=1): left of round 1 by actualRoundSpacing
-            // Round 3 (roundIdx=2): left of round 2 by actualRoundSpacing
-            // Round 4 (roundIdx=3): left of round 3 by actualRoundSpacing, closest to center
             const roundsFromRight = roundIdx;
             x = layout.startX + layout.width - gameBoxHalfWidth - (roundsFromRight * actualRoundSpacing);
           } else {
             // Left side: round 1 on far left, progress right
-            // Round 1 (roundIdx=0): far left
-            // Round 2 (roundIdx=1): right of round 1 by actualRoundSpacing
-            // Round 3 (roundIdx=2): right of round 2 by actualRoundSpacing
-            // Round 4 (roundIdx=3): right of round 3 by actualRoundSpacing, closest to center
             x = layout.startX + gameBoxHalfWidth + (roundIdx * actualRoundSpacing);
           }
           
-          const y = layout.startY + calculateGameY(round, gameIdx, roundGames.length);
+          let y: number;
+          if (round === 1) {
+            // Round 1: Use standard calculation
+            y = layout.startY + calculateGameYRound1(gameIdx, roundGames.length);
+          } else {
+            // Round 2+: Position vertically between parent games
+            const parent1Id = game.parentGame1Id;
+            const parent2Id = game.parentGame2Id;
+            
+            if (parent1Id && parent2Id) {
+              // Find parent positions (they should already be calculated since we process rounds in order)
+              const parent1Pos = positions.find(p => p.game.id === parent1Id && p.region === region);
+              const parent2Pos = positions.find(p => p.game.id === parent2Id && p.region === region);
+              
+              if (parent1Pos && parent2Pos) {
+                // Position at the midpoint between parent games
+                y = (parent1Pos.y + parent2Pos.y) / 2;
+              } else {
+                // Fallback if parents not found (shouldn't happen, but safety check)
+                const baseSpacing = 70;
+                const spacing = baseSpacing / Math.pow(2, round - 1);
+                const totalHeight = (8 - 1) * baseSpacing;
+                const roundHeight = (roundGames.length - 1) * spacing;
+                const startY = (totalHeight - roundHeight) / 2;
+                y = layout.startY + startY + (gameIdx * spacing);
+              }
+            } else {
+              // Fallback if no parents (shouldn't happen for Round 2+)
+              const baseSpacing = 70;
+              const spacing = baseSpacing / Math.pow(2, round - 1);
+              const totalHeight = (8 - 1) * baseSpacing;
+              const roundHeight = (roundGames.length - 1) * spacing;
+              const startY = (totalHeight - roundHeight) / 2;
+              y = layout.startY + startY + (gameIdx * spacing);
+            }
+          }
+          
           positions.push({ game, x, y, round, region });
         });
       });
