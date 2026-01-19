@@ -184,7 +184,7 @@ export class BracketImageService {
     });
 
     // SVG dimensions - larger to match traditional bracket
-    const width = 2400;
+    const width = 2250; //2400;
     const height = 1600;
     const padding = 40;
     
@@ -193,8 +193,9 @@ export class BracketImageService {
     const leftRegionWidth = 550;
     const centerWidth = 800; // Increased from 700 to give more space for Final Four games
     const rightRegionWidth = 550;
-    const rightRegionOffset = 100; // Additional space to push right regions further right
+    const rightRegionOffset = 250; // Additional space to push right regions further right
     const regionHeight = (height - padding * 2) / 2;
+    const gameBoxWidth = 180;
 
     // Region positions matching traditional bracket layout
     const regionLayout = {
@@ -231,7 +232,7 @@ export class BracketImageService {
       const isRightSide = rightSideRegions.includes(region);
       
       // Game box dimensions
-      const gameBoxWidth = 180;
+      // const gameBoxWidth = 180;
       const gameBoxHalfWidth = gameBoxWidth / 2;
       
       // Calculate round positions with proper spacing to prevent overlap
@@ -303,7 +304,8 @@ export class BracketImageService {
     // Position center games (Final Four and Championship)
     const centerGames = gamesByRegionAndRound['center'];
     if (centerGames) {
-      const centerX = padding + leftRegionWidth + (centerWidth / 2);
+      // const centerX = padding + leftRegionWidth + (centerWidth  / 2);
+      const centerX = width / 2;
       const leftSideRegions = ['East', 'West'];
       const rightSideRegions = ['South', 'Midwest'];
 
@@ -432,13 +434,13 @@ export class BracketImageService {
   }
 
   private generateBracketSVG(tournament: Tournament, games: Game[], logoDataUrls?: Map<string, string>): string {
-    const width = 2400;
+    const width = 2250; //2400;
     const height = 1600;
     const padding = 40;
     const leftRegionWidth = 550;
     const centerWidth = 800; // Increased from 700 to give more space for Final Four games
     const rightRegionWidth = 550;
-    const rightRegionOffset = 100; // Additional space to push right regions further right
+    const rightRegionOffset = 250; // Additional space to push right regions further right
     const regionHeight = (height - padding * 2) / 2;
     
     const positions = this.calculateGamePositions(games);
@@ -611,7 +613,7 @@ export class BracketImageService {
     });
 
     // Calculate center positions based on new layout
-    const centerX = padding + leftRegionWidth + (centerWidth / 2);
+    const centerX = width / 2; //padding + leftRegionWidth + (centerWidth / 2);
     const centerTitles = `
       <text x="${centerX}" y="${height / 2 - 100}" font-size="24" font-weight="bold" font-family="Arial" fill="#333" text-anchor="middle">FINAL FOUR</text>
       <text x="${centerX}" y="${height / 2 + 200}" font-size="24" font-weight="bold" font-family="Arial" fill="#333" text-anchor="middle">CHAMPIONSHIP</text>
@@ -670,7 +672,7 @@ export class BracketImageService {
               
               // Calculate start point (parent game bottom)
               let parentStartX: number;
-              let parentStartY = parent1Pos.y + parentBoxH / 2;
+              let parentStartY = parent1Pos.y; // + parentBoxH / 2;
               
               if (parentIsRight) {
                 parentStartX = parent1Pos.x - parentBoxW / 2; // Left edge for right regions
@@ -696,15 +698,15 @@ export class BracketImageService {
               if (isCenter || parentIsCenter) {
                 // Vertical line for center games
                 const midY = (parentStartY + childEndY) / 2;
-                lines.push(`<path d="M ${parentStartX} ${parentStartY} L ${parentStartX} ${midY} L ${childEndX} ${midY} L ${childEndX} ${childEndY}" stroke="#999" stroke-width="2" fill="none"/>`);
+                lines.push(`<path d="M ${parentStartX} ${parentStartY} L ${parentStartX} ${midY} L ${childEndX} ${midY} L ${childEndX} ${childEndY}" stroke="#D3D3D3" stroke-width="2" fill="none"/>`);
               } else if (isRightSide || parentIsRight) {
                 // Right side: horizontal line going left
                 const midX = Math.min(parentStartX, childEndX) - 60;
-                lines.push(`<path d="M ${parentStartX} ${parentStartY} L ${midX} ${parentStartY} L ${midX} ${childEndY} L ${childEndX} ${childEndY}" stroke="#999" stroke-width="2" fill="none"/>`);
+                lines.push(`<path d="M ${parentStartX} ${parentStartY} L ${midX} ${parentStartY} L ${midX} ${childEndY} L ${childEndX} ${childEndY}" stroke="#D3D3D3" stroke-width="2" fill="none"/>`);
               } else {
                 // Left side: horizontal line going right
                 const midX = Math.max(parentStartX, childEndX) + 60;
-                lines.push(`<path d="M ${parentStartX} ${parentStartY} L ${midX} ${parentStartY} L ${midX} ${childEndY} L ${childEndX} ${childEndY}" stroke="#999" stroke-width="2" fill="none"/>`);
+                lines.push(`<path d="M ${parentStartX} ${parentStartY} L ${midX} ${parentStartY} L ${midX} ${childEndY} L ${childEndX} ${childEndY}" stroke="#D3D3D3" stroke-width="2" fill="none"/>`);
               }
             }
           }
@@ -719,7 +721,7 @@ export class BracketImageService {
               
               // Calculate start point (parent game bottom)
               let parentStartX: number;
-              let parentStartY = parent2Pos.y + parentBoxH / 2;
+              let parentStartY = parent2Pos.y; // + parentBoxH / 2;
               
               if (parentIsRight) {
                 parentStartX = parent2Pos.x - parentBoxW / 2; // Left edge for right regions
@@ -745,15 +747,15 @@ export class BracketImageService {
               if (isCenter || parentIsCenter) {
                 // Vertical line for center games
                 const midY = (parentStartY + childEndY) / 2;
-                lines.push(`<path d="M ${parentStartX} ${parentStartY} L ${parentStartX} ${midY} L ${childEndX} ${midY} L ${childEndX} ${childEndY}" stroke="#999" stroke-width="2" fill="none"/>`);
+                lines.push(`<path d="M ${parentStartX} ${parentStartY} L ${parentStartX} ${midY} L ${childEndX} ${midY} L ${childEndX} ${childEndY}" stroke="#D3D3D3" stroke-width="2" fill="none"/>`);
               } else if (isRightSide || parentIsRight) {
                 // Right side: horizontal line going left
                 const midX = Math.min(parentStartX, childEndX) - 60;
-                lines.push(`<path d="M ${parentStartX} ${parentStartY} L ${midX} ${parentStartY} L ${midX} ${childEndY} L ${childEndX} ${childEndY}" stroke="#999" stroke-width="2" fill="none"/>`);
+                lines.push(`<path d="M ${parentStartX} ${parentStartY} L ${midX} ${parentStartY} L ${midX} ${childEndY} L ${childEndX} ${childEndY}" stroke="#D3D3D3" stroke-width="2" fill="none"/>`);
               } else {
                 // Left side: horizontal line going right
                 const midX = Math.max(parentStartX, childEndX) + 60;
-                lines.push(`<path d="M ${parentStartX} ${parentStartY} L ${midX} ${parentStartY} L ${midX} ${childEndY} L ${childEndX} ${childEndY}" stroke="#999" stroke-width="2" fill="none"/>`);
+                lines.push(`<path d="M ${parentStartX} ${parentStartY} L ${midX} ${parentStartY} L ${midX} ${childEndY} L ${childEndX} ${childEndY}" stroke="#D3D3D3" stroke-width="2" fill="none"/>`);
               }
             }
           }
