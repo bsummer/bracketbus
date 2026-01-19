@@ -17,7 +17,7 @@ const TournamentBracketPage = () => {
   const [tournament, setTournament] = useState<Tournament | null>(null);
   const [games, setGames] = useState<Game[]>([]);
   const [loading, setLoading] = useState(true);
-  const [selectedRegion, setSelectedRegion] = useState<string | null>(null);
+  const [expandedRegions, setExpandedRegions] = useState<Set<string>>(new Set());
   const [pdfGenerating, setPdfGenerating] = useState(false);
 
   useEffect(() => {
@@ -148,18 +148,31 @@ const TournamentBracketPage = () => {
     acc[region][round].push(game);
     return acc;
   }, {});
-  console.log('gamesByRegionAndRound', gamesByRegionAndRound);
-  // Define region positions
-  const regionPositions: Record<string, string> = {
-    'East': 'top-left',
-    'West': 'top-right',
-    'South': 'bottom-left',
-    'Midwest': 'bottom-right',
-    'center': 'center'
+
+  const toggleRegion = (region: string) => {
+    setExpandedRegions(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(region)) {
+        newSet.delete(region);
+      } else {
+        newSet.add(region);
+      }
+      return newSet;
+    });
   };
 
-  // Get available regions (excluding 'center')
-  const availableRegions = Object.keys(gamesByRegionAndRound);
+  // Sort regions: East, West, South, Midwest, then center
+  const regionOrder: Record<string, number> = {
+    'East': 1,
+    'West': 2,
+    'South': 3,
+    'Midwest': 4,
+    'center': 5
+  };
+
+  const sortedRegions = Object.entries(gamesByRegionAndRound).sort(([a], [b]) => {
+    return (regionOrder[a] || 99) - (regionOrder[b] || 99);
+  });
 
   return (
     <div>
@@ -183,100 +196,89 @@ const TournamentBracketPage = () => {
           </div>
         </div>
 
-        <div className="region-filters">
-          <span className="region-filter-label">Filter by region:</span>
-          {availableRegions.map((region) => (
-            <span key={region}>
-              <button
-                className={`region-filter-link ${selectedRegion === region ? 'active' : ''}`}
-                onClick={() => setSelectedRegion(selectedRegion === region ? null : region)}
-              >
-                {region === 'center' ? 'Semis & Finals' : region}
-              </button>
-            </span>
-          ))}
-        </div>
-
-        <div className={`bracket-container ${selectedRegion ? 'single-region-view' : ''}`}>
-          {/* Render each region */}
-          {Object.entries(gamesByRegionAndRound).map(([region, gamesByRound]) => {
-            const position = regionPositions[region] || 'center';
+        <div className="bracket-accordion">
+          {sortedRegions.map(([region, gamesByRound]) => {
+            const isExpanded = expandedRegions.has(region);
             const isCenter = region === 'center';
-            
-            // Hide region if a specific region is selected and this isn't it
-            const shouldShow = selectedRegion === null 
-              ? true 
-              : selectedRegion === region;
-            
-            if (!shouldShow) return null;
+            const regionDisplayName = isCenter ? 'Semis and Finals' : `${region} Region`;
             
             return (
-              <div key={region} className={`bracket-region bracket-region-${position}`}>
-                {isCenter ? (
-                  <h3 className="region-title">Semis and Finals</h3>
-                ) : (
-                  <h3 className="region-title">{region} Region</h3>
-                )}
-                {Object.entries(gamesByRound)
-                  .sort(([a], [b]) => Number(a) - Number(b))
-                  .map(([round, regionGames]) => (
-                    <div key={round} className={`round-container round-${round} ${isCenter ? 'round-center' : ''}`}>
-                      {isCenter && (
-                        <h3 className="round-title">
-                          {Number(round) === 5 ? 'Final Four' : Number(round) === 6 ? 'Championship' : `Round ${round}`}
-                        </h3>
-                      )}
-                      <div className={`games-list ${isCenter ? 'games-center' : ''}`}>
-                        {regionGames
-                          .sort((a, b) => a.gameNumber - b.gameNumber)
-                          .map((game) => {
-                            const { team1, team2 } = getTeamsForGame(game, games);
-                            
-                            return (
-                              <div key={game.id} className="game-card">
-                                <div className="game-info">
-                                  Game {game.gameNumber} - Round {game.round}
-                                </div>
-                                <div className="pick-info">
-                                  <div className={game.winnerId === team1?.id ? "team winner" : "team"}>
-                                    <span className="seed-container">
-                                      {team1 && 'seed' in team1 ? (team1 as any).seed : ''}
-                                    </span>
-                                    <span className="logo-container">
-                                      {team1?.logoUrl && (
-                                        <img src={team1.logoUrl} alt={team1.name} className="team-logo" />
-                                      )}
-                                    </span>
-                                    <span className="name-container">
-                                      {team1 ? team1.name : 'TBD'}
-                                    </span>
-                                    <span className="team-score">
-                                      {game.scoreTeam1 ?? ''}
-                                    </span>
-                                  </div>
-                                  <div className={game.winnerId === team2?.id ? "team winner" : "team"}>
-                                    <span className="seed-container">
-                                      {team2 && 'seed' in team2 ? (team2 as any).seed : ''}
-                                    </span>
-                                    <span className="logo-container">
-                                      {team2?.logoUrl && (
-                                        <img src={team2.logoUrl} alt={team2.name} className="team-logo" />
-                                      )}
-                                    </span>
-                                    <span className="name-container">
-                                      {team2 ? team2.name : 'TBD'}
-                                    </span>
-                                    <span className="team-score">
-                                      {game.scoreTeam2 ?? ''}
-                                    </span>
-                                  </div>
-                                </div>
-                              </div>
-                            );
-                          })}
-                      </div>
+              <div key={region} className="accordion-item">
+                <button
+                  className="accordion-header"
+                  onClick={() => toggleRegion(region)}
+                >
+                  <span className={`accordion-arrow ${isExpanded ? 'expanded' : ''}`}>
+                    ▶
+                  </span>
+                  <span className="accordion-title">{regionDisplayName}</span>
+                </button>
+                {isExpanded && (
+                  <div className="accordion-content">
+                    <div className={`bracket-region ${isCenter ? 'round-center' : ''}`}>
+                      {Object.entries(gamesByRound)
+                        .sort(([a], [b]) => Number(a) - Number(b))
+                        .map(([round, regionGames]) => (
+                          <div key={round} className={`round-container round-${round} ${isCenter ? 'round-center' : ''}`}>
+                            {isCenter && (
+                              <h3 className="round-title">
+                                {Number(round) === 5 ? 'Final Four' : Number(round) === 6 ? 'Championship' : `Round ${round}`}
+                              </h3>
+                            )}
+                            <div className={`games-list ${isCenter ? 'games-center' : ''}`}>
+                              {regionGames
+                                .sort((a, b) => a.gameNumber - b.gameNumber)
+                                .map((game) => {
+                                  const { team1, team2 } = getTeamsForGame(game, games);
+                                  
+                                  return (
+                                    <div key={game.id} className="game-card">
+                                      <div className="game-info">
+                                        Game {game.gameNumber} - Round {game.round}
+                                      </div>
+                                      <div className="pick-info">
+                                        <div className={game.winnerId === team1?.id ? "team winner" : "team"}>
+                                          <span className="seed-container">
+                                            {team1 && 'seed' in team1 ? (team1 as any).seed : ''}
+                                          </span>
+                                          <span className="logo-container">
+                                            {team1?.logoUrl && (
+                                              <img src={team1.logoUrl} alt={team1.name} className="team-logo" />
+                                            )}
+                                          </span>
+                                          <span className="name-container">
+                                            {team1 ? team1.name : 'TBD'}
+                                          </span>
+                                          <span className="team-score">
+                                            {game.scoreTeam1 ?? ''}
+                                          </span>
+                                        </div>
+                                        <div className={game.winnerId === team2?.id ? "team winner" : "team"}>
+                                          <span className="seed-container">
+                                            {team2 && 'seed' in team2 ? (team2 as any).seed : ''}
+                                          </span>
+                                          <span className="logo-container">
+                                            {team2?.logoUrl && (
+                                              <img src={team2.logoUrl} alt={team2.name} className="team-logo" />
+                                            )}
+                                          </span>
+                                          <span className="name-container">
+                                            {team2 ? team2.name : 'TBD'}
+                                          </span>
+                                          <span className="team-score">
+                                            {game.scoreTeam2 ?? ''}
+                                          </span>
+                                        </div>
+                                      </div>
+                                    </div>
+                                  );
+                                })}
+                            </div>
+                          </div>
+                        ))}
                     </div>
-                  ))}
+                  </div>
+                )}
               </div>
             );
           })}
