@@ -307,8 +307,7 @@ export class BracketImageService {
       // const centerX = padding + leftRegionWidth + (centerWidth  / 2);
       const centerX = width / 2;
       const leftSideRegions = ['East', 'West'];
-      const rightSideRegions = ['South', 'Midwest'];
-
+      
       // Final Four (Round 5) - position based on parent games
       const round5Games = centerGames[5]?.sort((a, b) => a.gameNumber - b.gameNumber) || [];
       
@@ -525,8 +524,7 @@ export class BracketImageService {
 
       const team1Fill = isTeam1Winner ? '#e8f5e9' : 'white';
       const team2Fill = isTeam2Winner ? '#e8f5e9' : 'white';
-      const fontWeight = (isTeam1Winner || isTeam2Winner) ? 'bold' : 'normal';
-
+      
       // Logo dimensions
       const logoSize = pos.round === 6 ? 16 : 12;
       const logoSpacing = logoSize + 5;
@@ -625,8 +623,7 @@ export class BracketImageService {
       const gameBoxWidth = 180;
       const gameBoxHeight = 50;
       const rightSideRegions = ['South', 'Midwest'];
-      const centerX = padding + leftRegionWidth + (centerWidth / 2);
-
+      
       positions.forEach((pos) => {
         const game = pos.game;
         const isRightSide = rightSideRegions.includes(pos.region);
@@ -666,13 +663,12 @@ export class BracketImageService {
             const parent1Pos = positions.find(p => p.game.id === game.parentGame1Id);
             if (parent1Pos) {
               const parentBoxW = parent1Pos.round === 6 ? 250 : gameBoxWidth;
-              const parentBoxH = parent1Pos.round === 6 ? 80 : gameBoxHeight;
               const parentIsRight = rightSideRegions.includes(parent1Pos.region);
               const parentIsCenter = parent1Pos.region === 'center';
               
               // Calculate start point (parent game bottom)
               let parentStartX: number;
-              let parentStartY = parent1Pos.y; // + parentBoxH / 2;
+              const parentStartY = parent1Pos.y; // + parentBoxH / 2;
               
               if (parentIsRight) {
                 parentStartX = parent1Pos.x - parentBoxW / 2; // Left edge for right regions
@@ -684,7 +680,7 @@ export class BracketImageService {
               
               // Calculate end point (child game top)
               let childEndX: number;
-              let childEndY = pos.y - gameBoxH / 2;
+              const childEndY = pos.y - gameBoxH / 2;
               
               if (isRightSide) {
                 childEndX = pos.x + gameBoxW / 2; // Right edge for right regions
@@ -715,13 +711,12 @@ export class BracketImageService {
             const parent2Pos = positions.find(p => p.game.id === game.parentGame2Id);
             if (parent2Pos) {
               const parentBoxW = parent2Pos.round === 6 ? 250 : gameBoxWidth;
-              const parentBoxH = parent2Pos.round === 6 ? 80 : gameBoxHeight;
               const parentIsRight = rightSideRegions.includes(parent2Pos.region);
               const parentIsCenter = parent2Pos.region === 'center';
               
               // Calculate start point (parent game bottom)
               let parentStartX: number;
-              let parentStartY = parent2Pos.y; // + parentBoxH / 2;
+              const parentStartY = parent2Pos.y; // + parentBoxH / 2;
               
               if (parentIsRight) {
                 parentStartX = parent2Pos.x - parentBoxW / 2; // Left edge for right regions
@@ -733,7 +728,7 @@ export class BracketImageService {
               
               // Calculate end point (child game top)
               let childEndX: number;
-              let childEndY = pos.y - gameBoxH / 2;
+              const childEndY = pos.y - gameBoxH / 2;
               
               if (isRightSide) {
                 childEndX = pos.x + gameBoxW / 2; // Right edge for right regions
