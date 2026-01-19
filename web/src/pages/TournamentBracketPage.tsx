@@ -5,6 +5,7 @@ import Header from '../components/common/Header';
 import HeaderPublic from '../components/common/HeaderPublic';
 import { tournamentsApi } from '../api/tournaments';
 import { gamesApi } from '../api/games';
+import apiClient from '../api/client';
 import type { Tournament } from '../api/tournaments';
 import type { Game } from '../api/games';
 import type { Team } from '../api/teams';
@@ -17,6 +18,7 @@ const TournamentBracketPage = () => {
   const [games, setGames] = useState<Game[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedRegion, setSelectedRegion] = useState<string | null>(null);
+  const [pdfGenerating, setPdfGenerating] = useState(false);
 
   useEffect(() => {
     if (tournamentId) {
@@ -79,6 +81,39 @@ const TournamentBracketPage = () => {
     return { team1, team2 };
   };
 
+  const handleDownloadImage = async () => {
+    if (!tournament || pdfGenerating || !tournamentId) return;
+
+    try {
+      setPdfGenerating(true);
+      console.log('Requesting bracket image from server...');
+
+      // Request image from server endpoint
+      const response = await apiClient.get(`/tournaments/${tournamentId}/bracket-image`, {
+        responseType: 'blob',
+      });
+
+      console.log('Bracket image received from server', { blobSize: response.data.size });
+
+      // Create download link
+      const url = URL.createObjectURL(response.data);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `${tournament.name.replace(/\s+/g, '_')}_Bracket.png`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+
+      console.log('Bracket image download completed');
+    } catch (error) {
+      console.error('Failed to generate bracket image:', error);
+      alert(`Failed to generate bracket image: ${error instanceof Error ? error.message : 'Unknown error'}\n\nCheck the browser console for details.`);
+    } finally {
+      setPdfGenerating(false);
+    }
+  };
+
   if (loading) {
     return (
       <div>
@@ -134,6 +169,14 @@ const TournamentBracketPage = () => {
           <h1>{tournament.name}</h1>
           <div className="bracket-info">
             <p>Start Date: {new Date(tournament.startDate).toLocaleDateString()}</p>
+            <button 
+              onClick={handleDownloadImage} 
+              className="btn btn-primary" 
+              style={{ marginRight: '10px' }}
+              disabled={pdfGenerating}
+            >
+              {pdfGenerating ? 'Generating Image...' : 'Download Image'}
+            </button>
             <Link to="/tournaments" className="btn btn-link">
               ← Back to Tournaments
             </Link>
