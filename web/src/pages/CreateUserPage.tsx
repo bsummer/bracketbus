@@ -14,6 +14,11 @@ const CreateUserPage = () => {
   const location = useLocation();
   const returnUrl = (location.state as any)?.returnUrl;
 
+  const isFormValid = username.trim() !== '' && 
+                      email.trim() !== '' && 
+                      password.trim() !== '' && 
+                      verifyPassword.trim() !== '';
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
@@ -97,11 +102,11 @@ const CreateUserPage = () => {
               minLength={6}
             />
           </div>
-          <button type="submit" disabled={loading}>
+          <button type="submit" disabled={loading || !isFormValid}>
             {loading ? 'Creating account...' : 'Create Account'}
           </button>
         </form>
-        <div className="login-link">
+        <div className="login-back-link">
           <Link to="/login" state={returnUrl ? { returnUrl } : undefined}>Back to Login</Link>
         </div>
       </div>
