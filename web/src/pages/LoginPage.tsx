@@ -20,6 +20,9 @@ const LoginPage = () => {
     }
   }, [isAuthenticated, navigate, returnUrl]);
 
+  const isFormValid = username.trim() !== '' && 
+                      password.trim() !== '';
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
@@ -66,7 +69,7 @@ const LoginPage = () => {
               required
             />
           </div>
-          <button type="submit" disabled={loading}>
+          <button type="submit" disabled={loading || !isFormValid}>
             {loading ? 'Logging in...' : 'Login'}
           </button>
         </form>
