@@ -507,8 +507,7 @@ describe('import-games', () => {
       if (foundTournament) {
         const row = records[0];
         const round = parseInt(row.round, 10);
-        const gameNumber = parseInt(row.game_number, 10);
-
+        
         if (round > 1) {
           const parent1Number = parseInt(row.parent_game1_number!, 10);
           const parent2Number = parseInt(row.parent_game2_number!, 10);

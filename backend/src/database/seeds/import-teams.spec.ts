@@ -31,8 +31,7 @@ describe('import-teams', () => {
   let mockTeamRepository: any;
   let mockTournamentRepository: any;
   let mockTournamentTeamRepository: any;
-  let importTeamsFromCSV: (csvFilePath: string) => Promise<void>;
-
+  
   beforeEach(() => {
     jest.clearAllMocks();
     jest.resetModules();
