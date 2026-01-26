@@ -144,16 +144,12 @@ const BracketDetailPage = () => {
       <div className="page">
         <div className="bracket-header">
         <h1>{bracket.name}</h1>
+        <h2>Pool: {bracket.pool?.name || 'Unknown'}</h2>
+        <h3>Tournament: {bracket.pool?.tournament?.name || 'Unknown'}</h3>
           <div className="bracket-info">
-            <p>Pool: {bracket.pool?.name || 'Unknown'}</p>
             <p className={isLocked ? 'locked' : 'unlocked'}>
-              {isLocked ? '🔒 Locked' : '✏️ Editable'}
+              {canEdit ? <Link to={`/brackets/${id}/edit`}>✏️ Editable</Link> : '🔒 Locked'}
             </p>
-            {canEdit && (
-              <Link to={`/brackets/${id}/edit`} className="btn btn-primary">
-                Edit Bracket
-              </Link>
-            )}
           </div>
         </div>
 

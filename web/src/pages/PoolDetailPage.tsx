@@ -118,19 +118,28 @@ const hasUserBracket = pool.brackets?.some((bracket: any) => bracket.userId === 
           {leaderboard.length === 0 ? (
             <p>No brackets yet</p>
           ) : (
-            <div className="bracket-list">
+            <table className="bracket-list">
+              <thead>
+                <tr>
+                  <th className="rank">Rank</th>
+                  <th className="username">Username</th>
+                  <th className="bracket-name">Bracket Name</th>
+                  <th className="pickSelection">Pick</th>
+                  <th className="score">Score</th>
+                </tr>
+              </thead>
               {leaderboard.map((bracket: any, index: number) => (
-                <div key={bracket.id} className={index % 2 === 0 ? "leaderboard-item odd" : "leaderboard-item even"}>
+                <tr key={bracket.id} className={index % 2 === 0 ? "leaderboard-item odd" : "leaderboard-item even"}>
                   <Link to={`/brackets/${bracket.id}`} className="bracket-link">
-                    <span className="rank">#{index + 1}</span>
-                    <span className="username">{bracket.user?.username}</span>
-                    <span className="bracket-name">{bracket.name}</span>
-                    <span className="pickSelection">{bracket.winner?.name}</span>
-                    <span className="score">{bracket.totalPoints || 0} points</span>
+                    <td className="rank">#{index + 1}</td>
+                    <td className="username">{bracket.user?.username}</td>
+                    <td className="bracket-name">{bracket.name}</td>
+                    <td className="pickSelection">{bracket.winner?.name}</td>
+                    <td className="score">{bracket.totalPoints || 0} pts</td>
                   </Link>
-                </div>
+                </tr>
               ))}
-            </div>
+            </table>
           )}
         </section>
 

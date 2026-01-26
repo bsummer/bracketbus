@@ -67,24 +67,26 @@ const PublicPoolPage = () => {
           {pool.brackets?.length === 0 ? (
             <p>No brackets yet</p>
           ) : (
-            <div className="leaderboard">
-              <div className="leaderboard-header">
-                <span className="rank">Rank</span>
-                <span className="username">Username</span>
-                <span className="bracket-name">Bracket Name</span>
-                <span className="pick">Pick</span>
-                <span className="score">Score</span>
-              </div>
+            <table className="leaderboard">
+              <thead>
+                <tr className="leaderboard-header">
+                  <th className="rank">Rank</th>
+                  <th className="username">Username</th>
+                  <th className="bracket-name">Bracket Name</th>
+                  <th className="pick">Pick</th>
+                  <th className="score">Score</th>
+                </tr>
+              </thead>
               {pool.brackets?.map((bracket: any, index: number) => (
-                <div key={bracket.id} className="leaderboard-item">
-                  <span className="rank">#{index + 1}</span>
-                  <span className="username">{bracket.user?.username || 'Unknown'}</span>
-                  <span className="bracket-name">{bracket.name}</span>
-                  <span className="pick">{bracket.winner?.name || 'Unknown'}</span>
-                  <span className="score">{bracket.pointsEarned? bracket.pointsEarned : 0}</span>
-                </div>
+                <tr key={bracket.id} className="leaderboard-item">
+                  <td className="rank">#{index + 1}</td>
+                  <td className="username">{bracket.user?.username || 'Unknown'}</td>
+                  <td className="bracket-name">{bracket.name}</td>
+                  <td className="pick">{bracket.winner?.name || 'Unknown'}</td>
+                  <td className="score">{bracket.pointsEarned? bracket.pointsEarned : 0}</td>
+                </tr>
               ))}
-            </div>
+            </table>
           )}
         </section>
 

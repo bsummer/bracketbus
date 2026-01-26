@@ -293,6 +293,15 @@
   font-size: 0.875rem;
 }
 
+.unlocked a {
+  color: #333;
+}
+
+.unlocked a:hover {
+  text-decoration: underline;
+  color: #5d7aee;
+}
+
 /* Responsive adjustments */
 @media (max-width: 1200px) {
   .bracket-region {

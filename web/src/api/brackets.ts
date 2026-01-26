@@ -15,6 +15,11 @@ export interface BracketPool {
   id: string;
   name: string;
   tournamentId: string;
+  tournament?: {
+    id: string;
+    name: string;
+    startDate: string;
+  };
 }
 
 export interface Bracket {
