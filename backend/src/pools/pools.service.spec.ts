@@ -457,30 +457,33 @@ describe('PoolsService', () => {
 
       expect(result).toHaveLength(3);
       
-      // Check member with bracket (highest score)
+      // Check member with bracket (highest score) - should be rank 1
       expect(result[0]).toMatchObject({
         id: 'bracket-1',
         userId: 'user-1',
         totalPoints: 100,
         hasBracket: true,
+        rank: 1,
         user: user1,
       });
 
-      // Check member with bracket (lower score)
+      // Check member with bracket (lower score) - should be rank 2
       expect(result[1]).toMatchObject({
         id: 'bracket-2',
         userId: 'user-2',
         totalPoints: 50,
         hasBracket: true,
+        rank: 2,
         user: user2,
       });
 
-      // Check member without bracket
+      // Check member without bracket - should be rank 3 (at bottom)
       expect(result[2]).toMatchObject({
         id: null,
         userId: 'user-3',
         totalPoints: 0,
         hasBracket: false,
+        rank: 3,
         user: user3,
       });
       expect(result[2].name).toBeNull();
@@ -548,6 +551,12 @@ describe('PoolsService', () => {
       expect(result[0].user?.username).toBe('alice');
       expect(result[1].user?.username).toBe('bob');
       expect(result[2].user?.username).toBe('charlie');
+      
+      // Both with 50 points should have same rank (rank 1)
+      expect(result[0].rank).toBe(1);
+      expect(result[1].rank).toBe(1);
+      // Member without bracket should be rank 3
+      expect(result[2].rank).toBe(3);
     });
 
     it('should exclude inactive members from leaderboard', async () => {
@@ -641,6 +650,7 @@ describe('PoolsService', () => {
         userId: 'user-1',
         totalPoints: 0,
         hasBracket: false,
+        rank: 1, // All members without brackets are tied at rank 1
         user: user1,
       });
       expect(result[1]).toMatchObject({
@@ -648,8 +658,161 @@ describe('PoolsService', () => {
         userId: 'user-2',
         totalPoints: 0,
         hasBracket: false,
+        rank: 1, // All members without brackets are tied at rank 1
         user: user2,
       });
+    });
+
+    it('should rank members with brackets (even 0 points) above members without brackets', async () => {
+      const user1 = { id: 'user-1', username: 'user1' } as User;
+      const user2 = { id: 'user-2', username: 'user2' } as User;
+      const user3 = { id: 'user-3', username: 'user3' } as User;
+
+      const bracket1: Partial<Bracket> = {
+        id: 'bracket-1',
+        userId: 'user-1',
+        poolId,
+        name: 'Bracket 1',
+        pointsEarned: 0, // Has bracket but 0 points
+        user: user1,
+      };
+
+      const pool = {
+        id: poolId,
+        members: [
+          {
+            id: 'member-1',
+            userId: 'user-1',
+            poolId,
+            status: PoolMemberStatus.ACTIVE,
+            user: user1,
+          },
+          {
+            id: 'member-2',
+            userId: 'user-2',
+            poolId,
+            status: PoolMemberStatus.ACTIVE,
+            user: user2,
+          },
+          {
+            id: 'member-3',
+            userId: 'user-3',
+            poolId,
+            status: PoolMemberStatus.ACTIVE,
+            user: user3,
+          },
+        ],
+        brackets: [bracket1] as Bracket[],
+      };
+
+      mockPoolsRepository.findOne.mockResolvedValue(pool);
+
+      const result = await service.getLeaderboard(poolId);
+
+      expect(result).toHaveLength(3);
+      
+      // Member with bracket (0 points) should be rank 1
+      expect(result[0]).toMatchObject({
+        id: 'bracket-1',
+        userId: 'user-1',
+        totalPoints: 0,
+        hasBracket: true,
+        rank: 1,
+        user: user1,
+      });
+
+      // Members without brackets should be tied at rank 2
+      expect(result[1]).toMatchObject({
+        userId: 'user-2',
+        totalPoints: 0,
+        hasBracket: false,
+        rank: 2,
+        user: user2,
+      });
+      expect(result[2]).toMatchObject({
+        userId: 'user-3',
+        totalPoints: 0,
+        hasBracket: false,
+        rank: 2,
+        user: user3,
+      });
+    });
+
+    it('should handle tied points correctly with same rank', async () => {
+      const user1 = { id: 'user-1', username: 'alice' } as User;
+      const user2 = { id: 'user-2', username: 'bob' } as User;
+      const user3 = { id: 'user-3', username: 'charlie' } as User;
+
+      const bracket1: Partial<Bracket> = {
+        id: 'bracket-1',
+        userId: 'user-1',
+        poolId,
+        name: 'Bracket 1',
+        pointsEarned: 100,
+        user: user1,
+      };
+
+      const bracket2: Partial<Bracket> = {
+        id: 'bracket-2',
+        userId: 'user-2',
+        poolId,
+        name: 'Bracket 2',
+        pointsEarned: 100, // Tied with bracket1
+        user: user2,
+      };
+
+      const bracket3: Partial<Bracket> = {
+        id: 'bracket-3',
+        userId: 'user-3',
+        poolId,
+        name: 'Bracket 3',
+        pointsEarned: 50,
+        user: user3,
+      };
+
+      const pool = {
+        id: poolId,
+        members: [
+          {
+            id: 'member-1',
+            userId: 'user-1',
+            poolId,
+            status: PoolMemberStatus.ACTIVE,
+            user: user1,
+          },
+          {
+            id: 'member-2',
+            userId: 'user-2',
+            poolId,
+            status: PoolMemberStatus.ACTIVE,
+            user: user2,
+          },
+          {
+            id: 'member-3',
+            userId: 'user-3',
+            poolId,
+            status: PoolMemberStatus.ACTIVE,
+            user: user3,
+          },
+        ],
+        brackets: [bracket1, bracket2, bracket3] as Bracket[],
+      };
+
+      mockPoolsRepository.findOne.mockResolvedValue(pool);
+
+      const result = await service.getLeaderboard(poolId);
+
+      expect(result).toHaveLength(3);
+      
+      // Both with 100 points should have rank 1
+      expect(result[0].rank).toBe(1);
+      expect(result[0].totalPoints).toBe(100);
+      expect(result[1].rank).toBe(1);
+      expect(result[1].totalPoints).toBe(100);
+      
+      // Member with 50 points should be rank 3 (skipping rank 2 because of tie)
+      expect(result[2].rank).toBe(3);
+      expect(result[2].totalPoints).toBe(50);
     });
   });
 });

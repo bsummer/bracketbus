@@ -121,7 +121,7 @@ const hasUserBracket = pool.brackets?.some((bracket: any) => bracket.userId === 
           ) : (
             <table className="bracket-list">
               <thead>
-                <tr>
+                <tr className="leaderboard-header">
                   <th className="rank">Rank</th>
                   <th className="username">Username</th>
                   <th className="bracket-name">Bracket Name</th>
@@ -145,7 +145,7 @@ const hasUserBracket = pool.brackets?.some((bracket: any) => bracket.userId === 
                       onClick={handleRowClick}
                       style={hasBracket ? { cursor: 'pointer' } : {}}
                     >
-                      <td className="rank">#{index + 1}</td>
+                      <td className="rank">#{entry.rank || index + 1}</td>
                       <td className="username">{entry.user?.username || 'Unknown'}</td>
                       <td className="bracket-name">
                         {hasBracket ? entry.name : <span style={{ fontStyle: 'italic', color: '#999' }}>No bracket</span>}

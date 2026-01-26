@@ -256,6 +256,7 @@ export class PoolsService {
           ...bracket,
           totalPoints: bracket.pointsEarned || 0,
           hasBracket: true,
+          rank: 0, // Will be calculated after sorting
         };
       } else {
         // Member doesn't have a bracket yet
@@ -270,19 +271,58 @@ export class PoolsService {
           winnerId: null,
           winner: null,
           hasBracket: false,
+          rank: 0, // Will be calculated after sorting
         };
       }
     });
 
-    // Sort by total points (descending), then by username for ties
+    // Sort by hasBracket first (members with brackets come first), then by total points (descending), then by username for ties
     leaderboard.sort((a, b) => {
+      // Members with brackets rank above members without brackets
+      if (a.hasBracket !== b.hasBracket) {
+        return b.hasBracket ? 1 : -1;
+      }
+      
+      // Within same bracket status, sort by points
       if (b.totalPoints !== a.totalPoints) {
         return b.totalPoints - a.totalPoints;
       }
+      
       // For same points, sort by username
       const usernameA = a.user?.username || '';
       const usernameB = b.user?.username || '';
       return usernameA.localeCompare(usernameB);
+    });
+
+    // Calculate ranks
+    // Rank is based on points, with ties getting the same rank
+    // Members with brackets (even 0 points) rank above members without brackets
+    let currentRank = 1;
+    let previousPoints: number | null = null;
+    let previousHasBracket: boolean | null = null;
+
+    leaderboard.forEach((entry, index) => {
+      // If this is the first entry, or points/hasBracket status changed, update rank
+      if (index === 0) {
+        entry.rank = currentRank;
+        previousPoints = entry.totalPoints;
+        previousHasBracket = entry.hasBracket;
+      } else {
+        // Check if rank should change
+        // Rank changes if:
+        // 1. Points changed, OR
+        // 2. hasBracket status changed (members with brackets vs without)
+        if (
+          entry.totalPoints !== previousPoints ||
+          entry.hasBracket !== previousHasBracket
+        ) {
+          // Rank is the position in the array (1-indexed)
+          currentRank = index + 1;
+        }
+        entry.rank = currentRank;
+        previousPoints = entry.totalPoints;
+        previousHasBracket = entry.hasBracket;
+      }
     });
 
     return leaderboard;

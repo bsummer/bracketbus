@@ -94,7 +94,7 @@ const PublicPoolPage = () => {
                   const hasBracket = entry.hasBracket !== false && entry.id;
                   return (
                     <tr key={hasBracket ? entry.id : `no-bracket-${entry.userId}`} className="leaderboard-item">
-                      <td className="rank">#{index + 1}</td>
+                      <td className="rank">#{entry.rank || index + 1}</td>
                       <td className="username">{entry.user?.username || 'Unknown'}</td>
                       <td className="bracket-name">
                         {hasBracket ? entry.name : <span style={{ fontStyle: 'italic', color: '#999' }}>No bracket</span>}
