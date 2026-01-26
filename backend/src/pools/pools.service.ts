@@ -247,12 +247,6 @@ export class PoolsService {
   }
 
   async leaderboard(brackets: Bracket[]) {
-    // Get scores for all brackets
-    const bracketIds = brackets.map((b) => b.id);
-    const scores = await this.scoresRepository.find({
-      where: { bracketId: In(bracketIds) },
-    });
-  
     // Combine brackets with their scores and sort by total points
     const leaderboard = brackets.map((bracket) => {
       const score = bracket.pointsEarned || 0; // scores.find((s) => s.bracketId === bracket.id);
