@@ -255,10 +255,10 @@ export class PoolsService {
   
     // Combine brackets with their scores and sort by total points
     const leaderboard = brackets.map((bracket) => {
-      const score = scores.find((s) => s.bracketId === bracket.id);
+      const score = bracket.pointsEarned || 0; // scores.find((s) => s.bracketId === bracket.id);
       return {
         ...bracket,
-        totalPoints: score?.totalPoints || 0,
+        totalPoints: score,
       };
     });
   
