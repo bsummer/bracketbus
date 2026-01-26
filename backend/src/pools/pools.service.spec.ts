@@ -10,6 +10,7 @@ import {
   User,
   Tournament,
   Score,
+  Bracket,
 } from '../common/entities';
 import { NotFoundException, ForbiddenException, ConflictException } from '@nestjs/common';
 
@@ -388,6 +389,267 @@ describe('PoolsService', () => {
       await expect(service.addMember(poolId, addMemberDto, creatorId)).rejects.toThrow(
         ConflictException,
       );
+    });
+  });
+
+  describe('getLeaderboard', () => {
+    const poolId = 'pool-1';
+
+    it('should return leaderboard with all active members, including those without brackets', async () => {
+      const user1 = { id: 'user-1', username: 'user1' } as User;
+      const user2 = { id: 'user-2', username: 'user2' } as User;
+      const user3 = { id: 'user-3', username: 'user3' } as User;
+
+      const bracket1: Partial<Bracket> = {
+        id: 'bracket-1',
+        userId: 'user-1',
+        poolId,
+        name: 'Bracket 1',
+        pointsEarned: 100,
+        winnerId: null,
+        winner: null,
+        user: user1,
+      };
+
+      const bracket2: Partial<Bracket> = {
+        id: 'bracket-2',
+        userId: 'user-2',
+        poolId,
+        name: 'Bracket 2',
+        pointsEarned: 50,
+        winnerId: null,
+        winner: null,
+        user: user2,
+      };
+
+      const pool = {
+        id: poolId,
+        name: 'Test Pool',
+        members: [
+          {
+            id: 'member-1',
+            userId: 'user-1',
+            poolId,
+            status: PoolMemberStatus.ACTIVE,
+            user: user1,
+          },
+          {
+            id: 'member-2',
+            userId: 'user-2',
+            poolId,
+            status: PoolMemberStatus.ACTIVE,
+            user: user2,
+          },
+          {
+            id: 'member-3',
+            userId: 'user-3',
+            poolId,
+            status: PoolMemberStatus.ACTIVE,
+            user: user3,
+          },
+        ],
+        brackets: [bracket1, bracket2] as Bracket[],
+      };
+
+      mockPoolsRepository.findOne.mockResolvedValue(pool);
+
+      const result = await service.getLeaderboard(poolId);
+
+      expect(result).toHaveLength(3);
+      
+      // Check member with bracket (highest score)
+      expect(result[0]).toMatchObject({
+        id: 'bracket-1',
+        userId: 'user-1',
+        totalPoints: 100,
+        hasBracket: true,
+        user: user1,
+      });
+
+      // Check member with bracket (lower score)
+      expect(result[1]).toMatchObject({
+        id: 'bracket-2',
+        userId: 'user-2',
+        totalPoints: 50,
+        hasBracket: true,
+        user: user2,
+      });
+
+      // Check member without bracket
+      expect(result[2]).toMatchObject({
+        id: null,
+        userId: 'user-3',
+        totalPoints: 0,
+        hasBracket: false,
+        user: user3,
+      });
+      expect(result[2].name).toBeNull();
+      expect(result[2].winnerId).toBeNull();
+      expect(result[2].winner).toBeNull();
+    });
+
+    it('should sort leaderboard by points descending, then by username', async () => {
+      const user1 = { id: 'user-1', username: 'alice' } as User;
+      const user2 = { id: 'user-2', username: 'bob' } as User;
+      const user3 = { id: 'user-3', username: 'charlie' } as User;
+
+      const bracket1: Partial<Bracket> = {
+        id: 'bracket-1',
+        userId: 'user-1',
+        poolId,
+        name: 'Bracket 1',
+        pointsEarned: 50,
+        user: user1,
+      };
+
+      const bracket2: Partial<Bracket> = {
+        id: 'bracket-2',
+        userId: 'user-2',
+        poolId,
+        name: 'Bracket 2',
+        pointsEarned: 50, // Same score as bracket1
+        user: user2,
+      };
+
+      const pool = {
+        id: poolId,
+        members: [
+          {
+            id: 'member-1',
+            userId: 'user-1',
+            poolId,
+            status: PoolMemberStatus.ACTIVE,
+            user: user1,
+          },
+          {
+            id: 'member-2',
+            userId: 'user-2',
+            poolId,
+            status: PoolMemberStatus.ACTIVE,
+            user: user2,
+          },
+          {
+            id: 'member-3',
+            userId: 'user-3',
+            poolId,
+            status: PoolMemberStatus.ACTIVE,
+            user: user3,
+          },
+        ],
+        brackets: [bracket1, bracket2] as Bracket[],
+      };
+
+      mockPoolsRepository.findOne.mockResolvedValue(pool);
+
+      const result = await service.getLeaderboard(poolId);
+
+      expect(result).toHaveLength(3);
+      // Should be sorted by points (50, 50, 0), then by username (alice, bob, charlie)
+      expect(result[0].user?.username).toBe('alice');
+      expect(result[1].user?.username).toBe('bob');
+      expect(result[2].user?.username).toBe('charlie');
+    });
+
+    it('should exclude inactive members from leaderboard', async () => {
+      const user1 = { id: 'user-1', username: 'user1' } as User;
+      const user2 = { id: 'user-2', username: 'user2' } as User;
+
+      const bracket1: Partial<Bracket> = {
+        id: 'bracket-1',
+        userId: 'user-1',
+        poolId,
+        name: 'Bracket 1',
+        pointsEarned: 100,
+        user: user1,
+      };
+
+      const pool = {
+        id: poolId,
+        members: [
+          {
+            id: 'member-1',
+            userId: 'user-1',
+            poolId,
+            status: PoolMemberStatus.ACTIVE,
+            user: user1,
+          },
+          {
+            id: 'member-2',
+            userId: 'user-2',
+            poolId,
+            status: PoolMemberStatus.LEFT, // Inactive member
+            user: user2,
+          },
+        ],
+        brackets: [bracket1] as Bracket[],
+      };
+
+      mockPoolsRepository.findOne.mockResolvedValue(pool);
+
+      const result = await service.getLeaderboard(poolId);
+
+      expect(result).toHaveLength(1);
+      expect(result[0].userId).toBe('user-1');
+    });
+
+    it('should handle pool with no members', async () => {
+      const pool = {
+        id: poolId,
+        members: [],
+        brackets: [],
+      };
+
+      mockPoolsRepository.findOne.mockResolvedValue(pool);
+
+      const result = await service.getLeaderboard(poolId);
+
+      expect(result).toHaveLength(0);
+    });
+
+    it('should handle pool with members but no brackets', async () => {
+      const user1 = { id: 'user-1', username: 'user1' } as User;
+      const user2 = { id: 'user-2', username: 'user2' } as User;
+
+      const pool = {
+        id: poolId,
+        members: [
+          {
+            id: 'member-1',
+            userId: 'user-1',
+            poolId,
+            status: PoolMemberStatus.ACTIVE,
+            user: user1,
+          },
+          {
+            id: 'member-2',
+            userId: 'user-2',
+            poolId,
+            status: PoolMemberStatus.ACTIVE,
+            user: user2,
+          },
+        ],
+        brackets: [],
+      };
+
+      mockPoolsRepository.findOne.mockResolvedValue(pool);
+
+      const result = await service.getLeaderboard(poolId);
+
+      expect(result).toHaveLength(2);
+      expect(result[0]).toMatchObject({
+        id: null,
+        userId: 'user-1',
+        totalPoints: 0,
+        hasBracket: false,
+        user: user1,
+      });
+      expect(result[1]).toMatchObject({
+        id: null,
+        userId: 'user-2',
+        totalPoints: 0,
+        hasBracket: false,
+        user: user2,
+      });
     });
   });
 });

@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, Link, useNavigate } from 'react-router-dom';
 import Header from '../components/common/Header';
 import { poolsApi } from '../api/pools';
 import type { Pool } from '../api/pools';
@@ -9,6 +9,7 @@ import './PoolDetailPage.css';
 const PoolDetailPage = () => {
   const { id, poolName } = useParams<{ id?: string, poolName?: string }>();
   const { user } = useAuth();
+  const navigate = useNavigate();
   const [pool, setPool] = useState<Pool | null>(null);
   const [loading, setLoading] = useState(true);
   const [leaderboard, setLeaderboard] = useState<any[]>([]);
@@ -116,7 +117,7 @@ const hasUserBracket = pool.brackets?.some((bracket: any) => bracket.userId === 
         <section className="section">
           <h2>Leaderboard</h2>
           {leaderboard.length === 0 ? (
-            <p>No brackets yet</p>
+            <p>No members yet</p>
           ) : (
             <table className="bracket-list">
               <thead>
@@ -128,17 +129,35 @@ const hasUserBracket = pool.brackets?.some((bracket: any) => bracket.userId === 
                   <th className="score">Score</th>
                 </tr>
               </thead>
-              {leaderboard.map((bracket: any, index: number) => (
-                <tr key={bracket.id} className={index % 2 === 0 ? "leaderboard-item odd" : "leaderboard-item even"}>
-                  <Link to={`/brackets/${bracket.id}`} className="bracket-link">
-                    <td className="rank">#{index + 1}</td>
-                    <td className="username">{bracket.user?.username}</td>
-                    <td className="bracket-name">{bracket.name}</td>
-                    <td className="pickSelection">{bracket.winner?.name}</td>
-                    <td className="score">{bracket.totalPoints || 0} pts</td>
-                  </Link>
-                </tr>
-              ))}
+              <tbody>
+                {leaderboard.map((entry: any, index: number) => {
+                  const hasBracket = entry.hasBracket !== false && entry.id;
+                  const handleRowClick = () => {
+                    if (hasBracket) {
+                      navigate(`/brackets/${entry.id}`);
+                    }
+                  };
+                  
+                  return (
+                    <tr
+                      key={hasBracket ? entry.id : `no-bracket-${entry.userId}`}
+                      className={`${index % 2 === 0 ? "leaderboard-item odd" : "leaderboard-item even"} ${hasBracket ? "clickable-row" : ""}`}
+                      onClick={handleRowClick}
+                      style={hasBracket ? { cursor: 'pointer' } : {}}
+                    >
+                      <td className="rank">#{index + 1}</td>
+                      <td className="username">{entry.user?.username || 'Unknown'}</td>
+                      <td className="bracket-name">
+                        {hasBracket ? entry.name : <span style={{ fontStyle: 'italic', color: '#999' }}>No bracket</span>}
+                      </td>
+                      <td className="pickSelection">
+                        {hasBracket ? (entry.winner?.name || '—') : <span style={{ fontStyle: 'italic', color: '#999' }}>—</span>}
+                      </td>
+                      <td className="score">{entry.totalPoints || 0} pts</td>
+                    </tr>
+                  );
+                })}
+              </tbody>
             </table>
           )}
         </section>

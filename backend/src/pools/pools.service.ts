@@ -235,8 +235,57 @@ export class PoolsService {
 
   async getLeaderboard(poolId: string) {
     const pool = await this.findOne(poolId);
-    // TODO: Calculate scores and return leaderboard
-    return this.leaderboard(pool.brackets);
+    const brackets = pool.brackets || [];
+    const activeMembers = (pool.members || []).filter(
+      (member) => member.status === PoolMemberStatus.ACTIVE
+    );
+
+    // Create a map of userId to bracket for quick lookup
+    const bracketMap = new Map<string, Bracket>();
+    brackets.forEach((bracket) => {
+      bracketMap.set(bracket.userId, bracket);
+    });
+
+    // Build leaderboard entries for all active members
+    const leaderboard = activeMembers.map((member) => {
+      const bracket = bracketMap.get(member.userId);
+      
+      if (bracket) {
+        // Member has a bracket
+        return {
+          ...bracket,
+          totalPoints: bracket.pointsEarned || 0,
+          hasBracket: true,
+        };
+      } else {
+        // Member doesn't have a bracket yet
+        return {
+          id: null,
+          name: null,
+          userId: member.userId,
+          poolId: pool.id,
+          user: member.user,
+          totalPoints: 0,
+          pointsEarned: 0,
+          winnerId: null,
+          winner: null,
+          hasBracket: false,
+        };
+      }
+    });
+
+    // Sort by total points (descending), then by username for ties
+    leaderboard.sort((a, b) => {
+      if (b.totalPoints !== a.totalPoints) {
+        return b.totalPoints - a.totalPoints;
+      }
+      // For same points, sort by username
+      const usernameA = a.user?.username || '';
+      const usernameB = b.user?.username || '';
+      return usernameA.localeCompare(usernameB);
+    });
+
+    return leaderboard;
   }
 
   async getMembers(poolId: string) {
