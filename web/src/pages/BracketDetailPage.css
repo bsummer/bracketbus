@@ -298,7 +298,7 @@
 }
 
 .unlocked a:hover {
-  text-decoration: underline;
+  background-color: none;
   color: #5d7aee;
 }
 

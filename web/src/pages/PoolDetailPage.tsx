@@ -87,10 +87,11 @@ const hasUserBracket = pool.brackets?.some((bracket: any) => bracket.userId === 
         </div>
         <div className="pool-info">
           <p>Tournament: {pool.tournament?.name || 'Unknown'}</p>
+          <p>Members: {pool.members?.length || 0}</p>
           <p className="invite-code">Invite Code: {pool.inviteCode}</p>
         </div>
 
-        <section className="section">
+        {/* <section className="section">
           <h2>Members</h2>
           <div className="member-list">
             {pool.members?.map((member: any) => (
@@ -112,7 +113,7 @@ const hasUserBracket = pool.brackets?.some((bracket: any) => bracket.userId === 
               </div>
             ))}
           </div>
-        </section>
+        </section> */}
 
         <section className="section">
           <h2>Leaderboard</h2>

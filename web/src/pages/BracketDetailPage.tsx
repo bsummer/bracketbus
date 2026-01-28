@@ -166,7 +166,7 @@ const BracketDetailPage = () => {
                   onClick={() => toggleRegion(region)}
                 >
                   <span className={`accordion-arrow ${isExpanded ? 'expanded' : ''}`}>
-                    →
+                  ▶
                   </span>
                   <span className="accordion-title">{regionTitle}</span>
                 </button>
