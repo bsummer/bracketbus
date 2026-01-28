@@ -1,12 +1,10 @@
 import { Injectable, NotFoundException, ForbiddenException, ConflictException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, In } from 'typeorm';
+import { Repository } from 'typeorm';
 import { Pool, PoolMember, PoolMemberStatus, User, Tournament, Bracket } from '../common/entities';
 import { CreatePoolDto } from './dto/create-pool.dto';
 import { JoinPoolDto } from './dto/join-pool.dto';
 import { AddMemberDto } from './dto/add-member.dto';
-import { ScoresService } from '../scores/scores.service';
-import { Score } from '../common/entities';
 
 
 @Injectable()
@@ -20,9 +18,6 @@ export class PoolsService {
     private usersRepository: Repository<User>,
     @InjectRepository(Tournament)
     private tournamentsRepository: Repository<Tournament>,
-    @InjectRepository(Score)
-    private scoresRepository: Repository<Score>,
-    private scoresService: ScoresService,
   ) {}
 
   private generateInviteCode(): string {
@@ -235,8 +230,97 @@ export class PoolsService {
 
   async getLeaderboard(poolId: string) {
     const pool = await this.findOne(poolId);
-    // TODO: Calculate scores and return leaderboard
-    return this.leaderboard(pool.brackets);
+    const brackets = pool.brackets || [];
+    const activeMembers = (pool.members || []).filter(
+      (member) => member.status === PoolMemberStatus.ACTIVE
+    );
+
+    // Create a map of userId to bracket for quick lookup
+    const bracketMap = new Map<string, Bracket>();
+    brackets.forEach((bracket) => {
+      bracketMap.set(bracket.userId, bracket);
+    });
+
+    // Build leaderboard entries for all active members
+    const leaderboard = activeMembers.map((member) => {
+      const bracket = bracketMap.get(member.userId);
+      
+      if (bracket) {
+        // Member has a bracket
+        return {
+          ...bracket,
+          totalPoints: bracket.pointsEarned || 0,
+          hasBracket: true,
+          rank: 0, // Will be calculated after sorting
+        };
+      } else {
+        // Member doesn't have a bracket yet
+        return {
+          id: null,
+          name: null,
+          userId: member.userId,
+          poolId: pool.id,
+          user: member.user,
+          totalPoints: 0,
+          pointsEarned: 0,
+          winnerId: null,
+          winner: null,
+          hasBracket: false,
+          rank: 0, // Will be calculated after sorting
+        };
+      }
+    });
+
+    // Sort by hasBracket first (members with brackets come first), then by total points (descending), then by username for ties
+    leaderboard.sort((a, b) => {
+      // Members with brackets rank above members without brackets
+      if (a.hasBracket !== b.hasBracket) {
+        return b.hasBracket ? 1 : -1;
+      }
+      
+      // Within same bracket status, sort by points
+      if (b.totalPoints !== a.totalPoints) {
+        return b.totalPoints - a.totalPoints;
+      }
+      
+      // For same points, sort by username
+      const usernameA = a.user?.username || '';
+      const usernameB = b.user?.username || '';
+      return usernameA.localeCompare(usernameB);
+    });
+
+    // Calculate ranks
+    // Rank is based on points, with ties getting the same rank
+    // Members with brackets (even 0 points) rank above members without brackets
+    let currentRank = 1;
+    let previousPoints: number | null = null;
+    let previousHasBracket: boolean | null = null;
+
+    leaderboard.forEach((entry, index) => {
+      // If this is the first entry, or points/hasBracket status changed, update rank
+      if (index === 0) {
+        entry.rank = currentRank;
+        previousPoints = entry.totalPoints;
+        previousHasBracket = entry.hasBracket;
+      } else {
+        // Check if rank should change
+        // Rank changes if:
+        // 1. Points changed, OR
+        // 2. hasBracket status changed (members with brackets vs without)
+        if (
+          entry.totalPoints !== previousPoints ||
+          entry.hasBracket !== previousHasBracket
+        ) {
+          // Rank is the position in the array (1-indexed)
+          currentRank = index + 1;
+        }
+        entry.rank = currentRank;
+        previousPoints = entry.totalPoints;
+        previousHasBracket = entry.hasBracket;
+      }
+    });
+
+    return leaderboard;
   }
 
   async getMembers(poolId: string) {
@@ -247,18 +331,12 @@ export class PoolsService {
   }
 
   async leaderboard(brackets: Bracket[]) {
-    // Get scores for all brackets
-    const bracketIds = brackets.map((b) => b.id);
-    const scores = await this.scoresRepository.find({
-      where: { bracketId: In(bracketIds) },
-    });
-  
     // Combine brackets with their scores and sort by total points
     const leaderboard = brackets.map((bracket) => {
-      const score = scores.find((s) => s.bracketId === bracket.id);
+      const score = bracket.pointsEarned || 0; // scores.find((s) => s.bracketId === bracket.id);
       return {
         ...bracket,
-        totalPoints: score?.totalPoints || 0,
+        totalPoints: score,
       };
     });
   

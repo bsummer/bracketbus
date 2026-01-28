@@ -11,13 +11,25 @@ const PublicPoolPage = () => {
   const { poolName } = useParams<{ poolName: string }>();
   const { isAuthenticated } = useAuth();
   const [pool, setPool] = useState<Pool | null>(null);
+  const [leaderboard, setLeaderboard] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     if (poolName) {
       loadPool();
+      loadLeaderboard();
     }
   }, [poolName]);
+
+  const loadLeaderboard = async () => {
+    try {
+      const poolData = await poolsApi.getByName(poolName!);
+      const data = await poolsApi.getLeaderboard(poolData.id);
+      setLeaderboard(data);
+    } catch (error) {
+      console.error('Failed to load leaderboard:', error);
+    }
+  };
 
   const loadPool = async () => {
     try {
@@ -64,8 +76,8 @@ const PublicPoolPage = () => {
 
         <section className="section">
           <h2>Leaderboard</h2>
-          {pool.brackets?.length === 0 ? (
-            <p>No brackets yet</p>
+          {leaderboard.length === 0 ? (
+            <p>No members yet</p>
           ) : (
             <table className="leaderboard">
               <thead>
@@ -77,15 +89,24 @@ const PublicPoolPage = () => {
                   <th className="score">Score</th>
                 </tr>
               </thead>
-              {pool.brackets?.map((bracket: any, index: number) => (
-                <tr key={bracket.id} className="leaderboard-item">
-                  <td className="rank">#{index + 1}</td>
-                  <td className="username">{bracket.user?.username || 'Unknown'}</td>
-                  <td className="bracket-name">{bracket.name}</td>
-                  <td className="pick">{bracket.winner?.name || 'Unknown'}</td>
-                  <td className="score">{bracket.pointsEarned? bracket.pointsEarned : 0}</td>
-                </tr>
-              ))}
+              <tbody>
+                {leaderboard.map((entry: any, index: number) => {
+                  const hasBracket = entry.hasBracket !== false && entry.id;
+                  return (
+                    <tr key={hasBracket ? entry.id : `no-bracket-${entry.userId}`} className="leaderboard-item">
+                      <td className="rank">#{entry.rank || index + 1}</td>
+                      <td className="username">{entry.user?.username || 'Unknown'}</td>
+                      <td className="bracket-name">
+                        {hasBracket ? entry.name : <span style={{ fontStyle: 'italic', color: '#999' }}>No bracket</span>}
+                      </td>
+                      <td className="pick">
+                        {hasBracket ? (entry.winner?.name || '—') : <span style={{ fontStyle: 'italic', color: '#999' }}>—</span>}
+                      </td>
+                      <td className="score">{entry.totalPoints || 0}</td>
+                    </tr>
+                  );
+                })}
+              </tbody>
             </table>
           )}
         </section>

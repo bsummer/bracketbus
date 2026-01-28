@@ -65,6 +65,13 @@
   border-radius: 4px;
 }
 
+.leaderboard-header {
+  display: flex;
+  gap: 1rem;
+  font-weight: bold;
+  border-radius: 4px;
+}
+
 .leaderboard-item {
   display: flex;
   gap: 1rem;
