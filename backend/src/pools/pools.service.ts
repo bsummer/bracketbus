@@ -1,12 +1,10 @@
 import { Injectable, NotFoundException, ForbiddenException, ConflictException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, In } from 'typeorm';
+import { Repository } from 'typeorm';
 import { Pool, PoolMember, PoolMemberStatus, User, Tournament, Bracket } from '../common/entities';
 import { CreatePoolDto } from './dto/create-pool.dto';
 import { JoinPoolDto } from './dto/join-pool.dto';
 import { AddMemberDto } from './dto/add-member.dto';
-import { ScoresService } from '../scores/scores.service';
-import { Score } from '../common/entities';
 
 
 @Injectable()
@@ -20,9 +18,6 @@ export class PoolsService {
     private usersRepository: Repository<User>,
     @InjectRepository(Tournament)
     private tournamentsRepository: Repository<Tournament>,
-    @InjectRepository(Score)
-    private scoresRepository: Repository<Score>,
-    private scoresService: ScoresService,
   ) {}
 
   private generateInviteCode(): string {
