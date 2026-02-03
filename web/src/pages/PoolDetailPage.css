@@ -67,6 +67,8 @@ td, th {
 .clickable-row {
   cursor: pointer;
   transition: background-color 0.2s;
+  font-weight: 600;
+  color: #808080;
 }
 
 .clickable-row:hover {

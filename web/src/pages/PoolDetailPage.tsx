@@ -65,8 +65,6 @@ const PoolDetailPage = () => {
     );
   }
 
-  const isCreator = pool.creatorId === user?.id;
-
   // Check if user already has a bracket in this pool
 const hasUserBracket = pool.brackets?.some((bracket: any) => bracket.userId === user?.id);
 

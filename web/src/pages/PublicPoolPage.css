@@ -75,7 +75,7 @@
 .leaderboard-item {
   display: flex;
   gap: 1rem;
-  /* padding: 0 0.75rem; */
+  padding: 0.25rem 0;
   background: #f5f5f5;
   border-radius: 4px;
 }
@@ -86,6 +86,10 @@
 
 .leaderboard-item.even {
   background: #e0e0e0;
+}
+
+.leaderboard-item.clickable-row:hover {
+  background: #e3f2fd;
 }
 
 .bracket-name {
