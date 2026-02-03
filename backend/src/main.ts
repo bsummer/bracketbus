@@ -2,6 +2,7 @@ import { NestFactory } from '@nestjs/core';
 import { ValidationPipe, Logger } from '@nestjs/common';
 import { AppModule } from './app.module';
 import { AppDataSource } from './data-source';
+import { LoggingInterceptor } from './logging/logging.interceptor';
 
 async function bootstrap() {
   // Run migrations BEFORE starting NestJS app
@@ -19,6 +20,7 @@ async function bootstrap() {
   }
 
   const app = await NestFactory.create(AppModule);
+  app.useGlobalInterceptors(new LoggingInterceptor());
 
   // Enable CORS
   app.enableCors({
